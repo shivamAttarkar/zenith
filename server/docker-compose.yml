@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:18.1-trixie
+    container_name: pg
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
+      POSTGRES_DB: ${PGDATABASE:-zenith}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.4.0-bookworm
+    container_name: redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  pg-migrate:
+    container_name: pg-migration-service
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgres://${PGUSER:-postgres}:${PGPASSWORD:-postgres}@postgres:5432/${PGDATABASE:-zenith}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: bun run db:prepare
+
+volumes:
+  postgres_data:
+  redis_data:
