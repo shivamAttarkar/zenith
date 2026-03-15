@@ -6,12 +6,14 @@ import cors from "@elysiajs/cors";
 import openapi from "@elysiajs/openapi";
 import { authOpenAPI } from "./lib/auth";
 import "./env";
+import { webSocketPlugin } from "./ws";
 
 const app = new Elysia();
 
 app
   .use(cors())
   .use(authPlugin)
+  .use(webSocketPlugin)
   .use(
     openapi({
       documentation: {

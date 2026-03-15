@@ -8,6 +8,7 @@ import { passkey } from "@better-auth/passkey";
 
 export const auth = betterAuth({
   basePath: "/auth",
+  trustedOrigins: ["http://localhost:5173"],
   database: drizzleAdapter(pg, {
     provider: "pg",
     schema,

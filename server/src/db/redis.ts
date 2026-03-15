@@ -1,6 +1,6 @@
 import { RedisClient } from "bun";
 
 const redisPub = new RedisClient(process.env.REDIS_URL);
-const redisSub = redisPub.duplicate();
+const redisSub = await redisPub.duplicate();
 
 export { redisPub, redisSub };
