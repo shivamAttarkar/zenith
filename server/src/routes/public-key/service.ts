@@ -13,7 +13,7 @@ export abstract class PublicKeyService {
       .from(userPublicKey)
       .where(eq(userPublicKey.userId, userId));
     if (!key) {
-      throw status(404, { message: "No public key registered" });
+      return status(404, { message: "No public key registered" });
     }
     return key;
   }
@@ -27,7 +27,7 @@ export abstract class PublicKeyService {
       .from(userPublicKey)
       .where(eq(userPublicKey.userId, userId));
     if (existing.length > 0) {
-      throw status(409, {
+      return status(409, {
         message: "Public key already exists, use PUT method to update",
       });
     }
@@ -37,7 +37,7 @@ export abstract class PublicKeyService {
       .returning();
 
     if (!key) {
-      throw status(500, { message: "Failed to create public key" });
+      return status(500, { message: "Failed to create public key" });
     }
     return key;
   }
@@ -52,7 +52,7 @@ export abstract class PublicKeyService {
       .where(eq(userPublicKey.userId, userId))
       .returning();
     if (!key) {
-      throw status(404, { message: "No public key registered" });
+      return status(404, { message: "No public key registered" });
     }
     return key;
   }
@@ -65,7 +65,7 @@ export abstract class PublicKeyService {
       .where(eq(userPublicKey.userId, userId))
       .returning();
     if (!key) {
-      throw status(404, { message: "No public key registered" });
+      return status(404, { message: "No public key registered" });
     }
     return key;
   }

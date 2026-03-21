@@ -38,6 +38,7 @@ export const publicKeyRoutes = new Elysia({
       body: PublicKeyModel.publicKeyBody,
       response: {
         200: PublicKeyModel.publicKeyResponse,
+        404: PublicKeyModel.publicKeyError,
       },
     },
   )
@@ -45,5 +46,6 @@ export const publicKeyRoutes = new Elysia({
     auth: true,
     response: {
       200: PublicKeyModel.publicKeyResponse,
+      404: PublicKeyModel.publicKeyError,
     },
   });
