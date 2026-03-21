@@ -25,5 +25,3 @@ const validNodeEnvs = ["development", "production"];
 if (!validNodeEnvs.includes(Bun.env.NODE_ENV!)) {
   throw new Error(`Invalid NODE_ENV: ${Bun.env.NODE_ENV}`);
 }
-
-export {};
