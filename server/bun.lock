@@ -8,6 +8,7 @@
         "@better-auth/passkey": "^1.5.5",
         "@elysiajs/cors": "^1.4.1",
         "@elysiajs/openapi": "^1.4.14",
+        "@simplewebauthn/server": "^13.3.0",
         "better-auth": "^1.5.5",
         "drizzle-orm": "^0.45.1",
         "drizzle-typebox": "^0.3.3",
