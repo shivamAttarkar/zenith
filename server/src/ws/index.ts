@@ -1,6 +1,8 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { auth } from "../lib/auth";
 import { redisPub, redisSub } from "../db/redis";
+import { WsClientMessage, WsServerMessage } from "./types";
+import type { WsServerMessage as WsServerMessageType } from "./types";
 
 const activeSubs = new Map<
   string,
@@ -14,16 +16,8 @@ export const webSocketPlugin = new Elysia({ name: "websocket" })
     return { user: session.user };
   })
   .ws("/ws/chat", {
-    body: t.Object({
-      type: t.Literal("chat"),
-      receiverId: t.String(),
-      msg: t.String(),
-    }),
-    response: t.Object({
-      type: t.Literal("chat"),
-      senderId: t.String(),
-      msg: t.String(),
-    }),
+    body: WsClientMessage,
+    response: WsServerMessage,
     open: async (ws) => {
       const user = ws.data.user;
 
@@ -47,7 +41,14 @@ export const webSocketPlugin = new Elysia({ name: "websocket" })
       if (body.type == "chat") {
         const user = ws.data.user;
         const online = await redisPub.exists(`presence:${body.receiverId}`);
-        const res = { type: "chat", senderId: user.id, msg: body.msg } as const;
+        const res: WsServerMessageType = {
+          type: "chat",
+          id: body.id,
+          ts: body.ts,
+          senderId: user.id,
+          receiverId: body.receiverId,
+          payload: body.payload,
+        };
         if (online) {
           await redisPub.publish(`msg:${body.receiverId}`, JSON.stringify(res));
         } else {
