@@ -6,6 +6,7 @@ export const db = {
     {
       user: table.user,
       userPublicKey: table.userPublicKey,
+      friendRequest: table.friendRequest,
     },
     "insert",
   ),
@@ -13,6 +14,7 @@ export const db = {
     {
       user: table.user,
       userPublicKey: table.userPublicKey,
+      friendRequest: table.friendRequest,
     },
     "select",
   ),
