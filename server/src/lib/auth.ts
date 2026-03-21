@@ -16,7 +16,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [openAPI(), passkey()],
+  plugins: [
+    openAPI(),
+    passkey({
+      rpID: Bun.env.RP_ID,
+      rpName: Bun.env.RP_NAME,
+      origin: Bun.env.ORIGIN,
+    }),
+  ],
 });
 
 let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>;

@@ -11,6 +11,9 @@ const required = [
   "DATABASE_URL",
   "REDIS_PORT",
   "REDIS_URL",
+  "RP_ID",
+  "RP_NAME",
+  "ORIGIN",
 ] as const;
 
 for (const key of required) {
