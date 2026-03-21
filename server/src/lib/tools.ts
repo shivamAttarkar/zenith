@@ -23,33 +23,18 @@ export async function deriveChallenge(
   return Buffer.from(challenge).toString("base64url");
 }
 
-export const derivefriendRequestOptions = async (
-  friendRequestId: string,
-  userId: string,
-) => {
+export const derivefriendRequestOptions = async ({
+  challenge,
+  userId,
+}: {
+  challenge: string;
+  userId: string;
+}) => {
   const rpID = Bun.env.RP_ID;
   const [userData] = await pg.select().from(user).where(eq(user.id, userId));
 
   if (!userData) {
     throw new Error("User doesn't exists");
-  }
-
-  const [challengeData] = await pg
-    .select()
-    .from(friendRequest)
-    .where(
-      and(
-        eq(friendRequest.id, friendRequestId),
-        or(
-          eq(friendRequest.senderId, userId),
-          eq(friendRequest.receiverId, userId),
-        ),
-        gt(friendRequest.expiresAt, new Date()),
-      ),
-    );
-
-  if (!challengeData) {
-    throw new Error("Invalid Request");
   }
 
   const userPasskeys = await pg
@@ -61,12 +46,12 @@ export const derivefriendRequestOptions = async (
     await generateAuthenticationOptions({
       rpID,
       allowCredentials: userPasskeys.map((passkey) => ({
-        id: passkey.id,
+        id: passkey.credentialID,
         transports:
           (passkey.transports?.split(",") as AuthenticatorTransportFuture[]) ??
           [],
       })),
-      challenge: challengeData.challenge,
+      challenge: Buffer.from(challenge, "base64url"),
     });
 
   return options;
