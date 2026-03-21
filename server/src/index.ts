@@ -20,7 +20,7 @@ app
         components: await authOpenAPI.components,
         paths: await authOpenAPI.getPaths(),
       },
-      enabled: process.env.NODE_ENV === "development",
+      enabled: Bun.env.NODE_ENV === "development",
     }),
   )
   .get("/", () => "Hello from Elysia!")
@@ -42,17 +42,17 @@ app
   });
 
 app.listen({
-  port: process.env.PORT,
+  port: Bun.env.PORT,
   reusePort: true,
 });
 
-if (process.env.NODE_ENV === "development") {
+if (Bun.env.NODE_ENV === "development") {
   console.log(
     `Elysia is running at http://${app.server?.hostname}:${app.server?.port}`,
   );
   console.log(`OpenAPI Docs are available at http://localhost:3000/openapi`);
 }
 
-if (process.env.NODE_ENV && process.env.NODE_ENV === "production") {
+if (Bun.env.NODE_ENV && Bun.env.NODE_ENV === "production") {
   console.log(`Worker ${process.pid} is online.`);
 }
