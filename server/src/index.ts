@@ -5,8 +5,9 @@ import { redisPub } from "./db/redis";
 import cors from "@elysiajs/cors";
 import openapi from "@elysiajs/openapi";
 import { authOpenAPI } from "./lib/auth";
-import "./env";
+import { routes } from "./routes";
 import { webSocketPlugin } from "./ws";
+import "./env";
 
 const app = new Elysia();
 
@@ -14,6 +15,7 @@ app
   .use(cors())
   .use(authPlugin)
   .use(webSocketPlugin)
+  .use(routes)
   .use(
     openapi({
       documentation: {
