@@ -52,7 +52,7 @@ export const authOpenAPI = {
       }
 
       return reference;
-    // biome-ignore lint/suspicious/noExplicitAny: better-auth path types incompatible with OpenAPI PathsObject
+      // biome-ignore lint/suspicious/noExplicitAny: better-auth path types incompatible with OpenAPI PathsObject
     }) as Promise<any>,
   // biome-ignore lint/suspicious/noExplicitAny: better-auth uses "date" as a DBFieldType which is incompatible with OpenAPI ComponentsObject
   components: getSchema().then(({ components }) => components) as Promise<any>,
