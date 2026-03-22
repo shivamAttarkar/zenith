@@ -1,13 +1,13 @@
-import { hkdfSync } from "crypto";
+import { hkdfSync } from "node:crypto";
 import {
+  type AuthenticatorTransportFuture,
   generateAuthenticationOptions,
   type PublicKeyCredentialRequestOptionsJSON,
-  type AuthenticatorTransportFuture,
 } from "@simplewebauthn/server";
+import { eq } from "drizzle-orm";
 import { pg } from "../db/pg";
-import { friendRequest, passkey, user } from "../db/schema";
-import { and, eq, or, gt } from "drizzle-orm";
 import { redisPub } from "../db/redis";
+import { passkey, user } from "../db/schema";
 import type { WsServerMessage } from "../ws/types";
 
 export async function deriveChallenge(
@@ -72,7 +72,7 @@ export const sendWSMessageToUser = async ({
   const message = JSON.stringify(msg);
   if (online) {
     const res = await redisPub.publish(`msg:${userId}`, message);
-    if (res == 0) {
+    if (res === 0) {
       await redisPub.rpush(`queue:${userId}`, message);
     }
   } else {

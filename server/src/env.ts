@@ -17,11 +17,12 @@ const required = [
 ] as const;
 
 for (const key of required) {
-  if (!Bun.env[key])
+  if (!Bun.env[key]) {
     throw new Error(`Missing required environment variable: ${key}`);
+  }
 }
 
 const validNodeEnvs = ["development", "production"];
-if (!validNodeEnvs.includes(Bun.env.NODE_ENV!)) {
+if (!Bun.env.NODE_ENV || !validNodeEnvs.includes(Bun.env.NODE_ENV)) {
   throw new Error(`Invalid NODE_ENV: ${Bun.env.NODE_ENV}`);
 }

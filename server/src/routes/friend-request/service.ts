@@ -1,26 +1,26 @@
-import { and, eq, inArray, or } from "drizzle-orm";
-import { pg } from "../../db/pg";
-import { friendRequest, passkey, userPublicKey, user } from "../../db/schema";
-import type { FriendRequestModel } from "./model";
-import { status } from "elysia";
 import {
-  verifyAuthenticationResponse,
   type AuthenticatorTransportFuture,
+  verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
+import { and, eq, inArray, or } from "drizzle-orm";
+import { status } from "elysia";
+import { pg } from "../../db/pg";
+import { friendRequest, passkey, user, userPublicKey } from "../../db/schema";
 import {
   deriveChallenge,
   derivefriendRequestOptions,
   sendWSMessageToUser,
 } from "../../lib/tools";
+import type { FriendRequestModel } from "./model";
 
 const rpID = Bun.env.RP_ID;
 const expectedOrigin = Bun.env.ORIGIN;
 
-export abstract class FriendRequestService {
-  static async get({
+export const FriendRequestService = {
+  get: async ({
     id,
     userId,
-  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) {
+  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) => {
     const [res] = await pg
       .select()
       .from(friendRequest)
@@ -34,15 +34,14 @@ export abstract class FriendRequestService {
       });
     }
     return res;
-  }
-
-  static async create({
+  },
+  create: async ({
     senderId,
     receiverId,
   }: Pick<
     FriendRequestModel["friendRequestResponse"],
     "senderId" | "receiverId"
-  >) {
+  >) => {
     if (senderId === receiverId) {
       return status(400, {
         message: "You cannot send a friend request to yourself.",
@@ -97,7 +96,7 @@ export abstract class FriendRequestService {
         ),
       );
 
-    if (existing && existing[0]) {
+    if (existing?.[0]) {
       return status(409, {
         message:
           existing[0].status === "accepted"
@@ -127,12 +126,11 @@ export abstract class FriendRequestService {
     }
 
     return createdReq;
-  }
-
-  static async getAuthOptions({
+  },
+  getAuthOptions: async ({
     id,
     userId,
-  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) {
+  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) => {
     const [req] = await pg
       .select()
       .from(friendRequest)
@@ -151,11 +149,10 @@ export abstract class FriendRequestService {
     }
 
     return derivefriendRequestOptions({ challenge: req.challenge, userId });
-  }
-
-  static async find({
+  },
+  find: async ({
     userId,
-  }: Pick<FriendRequestModel["friendRequestParameters"], "userId">) {
+  }: Pick<FriendRequestModel["friendRequestParameters"], "userId">) => {
     const res = await pg
       .select()
       .from(friendRequest)
@@ -167,13 +164,12 @@ export abstract class FriendRequestService {
       );
 
     return res;
-  }
-
-  static async verify({
+  },
+  verify: async ({
     id,
     userId,
     authenticationResponse,
-  }: FriendRequestModel["friendRequestParameters"]) {
+  }: FriendRequestModel["friendRequestParameters"]) => {
     const [req] = await pg
       .select()
       .from(friendRequest)
@@ -281,12 +277,11 @@ export abstract class FriendRequestService {
     }
 
     return updated;
-  }
-
-  static async reject({
+  },
+  reject: async ({
     id,
     userId,
-  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) {
+  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) => {
     const [req] = await pg
       .select()
       .from(friendRequest)
@@ -320,12 +315,11 @@ export abstract class FriendRequestService {
     });
 
     return updatedReq;
-  }
-
-  static async delete({
+  },
+  delete: async ({
     id,
     userId,
-  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) {
+  }: Pick<FriendRequestModel["friendRequestParameters"], "id" | "userId">) => {
     const [req] = await pg
       .select()
       .from(friendRequest)
@@ -358,5 +352,5 @@ export abstract class FriendRequestService {
     });
 
     return deletedReq;
-  }
-}
+  },
+};

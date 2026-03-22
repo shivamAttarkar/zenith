@@ -1,11 +1,11 @@
+import { and, eq, ilike } from "drizzle-orm";
 import { status } from "elysia";
-import { UserModel } from "./model";
 import { pg } from "../../db/pg";
 import { user, userPublicKey } from "../../db/schema";
-import { and, eq, ilike } from "drizzle-orm";
+import type { UserModel } from "./model";
 
-export abstract class UserService {
-  static async get({ id }: Pick<UserModel["userResponse"], "id">) {
+export const UserService = {
+  get: async ({ id }: Pick<UserModel["userResponse"], "id">) => {
     const [userData] = await pg
       .select({
         id: user.id,
@@ -22,9 +22,8 @@ export abstract class UserService {
       return status(404, { message: "User not found." });
     }
     return userData;
-  }
-
-  static async search({ email, name }: UserModel["userQueryParams"]) {
+  },
+  search: async ({ email, name }: UserModel["userQueryParams"]) => {
     if (!email && !name) {
       return status(400, {
         message: "At least one query param (email or name) is required",
@@ -50,5 +49,5 @@ export abstract class UserService {
       .leftJoin(userPublicKey, eq(userPublicKey.userId, user.id))
       .where(and(...conditions))
       .limit(5);
-  }
-}
+  },
+};

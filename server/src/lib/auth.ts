@@ -1,10 +1,10 @@
+import { passkey } from "@better-auth/passkey";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { pg } from "../db/pg";
-import * as schema from "../db/schema/auth";
 import { openAPI } from "better-auth/plugins";
 import { Elysia } from "elysia";
-import { passkey } from "@better-auth/passkey";
+import { pg } from "../db/pg";
+import * as schema from "../db/schema/auth";
 
 export const auth = betterAuth({
   basePath: "/auth",
@@ -41,13 +41,20 @@ export const authOpenAPI = {
         }
         reference[key] = paths[path];
         for (const method of Object.keys(paths[path])) {
-          const operation = (reference[key] as any)[method];
+          const operation = (
+            reference[key] as Record<string, { tags?: string[] }>
+          )[method];
+          if (!operation) {
+            continue;
+          }
           operation.tags = ["authentication"];
         }
       }
 
       return reference;
+      // biome-ignore lint/suspicious/noExplicitAny: better-auth path types incompatible with OpenAPI PathsObject
     }) as Promise<any>,
+  // biome-ignore lint/suspicious/noExplicitAny: better-auth uses "date" as a DBFieldType which is incompatible with OpenAPI ComponentsObject
   components: getSchema().then(({ components }) => components) as Promise<any>,
 } as const;
 
@@ -60,7 +67,9 @@ export const authPlugin = new Elysia({ name: "better-auth" })
           headers,
         });
 
-        if (!session) return status(401);
+        if (!session) {
+          return status(401);
+        }
 
         return {
           user: session.user,

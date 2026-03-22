@@ -1,13 +1,13 @@
+import { eq } from "drizzle-orm";
 import { status } from "elysia";
 import { pg } from "../../db/pg";
 import { userPublicKey } from "../../db/schema";
-import { eq } from "drizzle-orm";
 import type { PublicKeyModel } from "./model";
 
-export abstract class PublicKeyService {
-  static async get({
+export const PublicKeyService = {
+  get: async ({
     userId,
-  }: Pick<PublicKeyModel["publicKeyParameters"], "userId">) {
+  }: Pick<PublicKeyModel["publicKeyParameters"], "userId">) => {
     const [key] = await pg
       .select()
       .from(userPublicKey)
@@ -16,12 +16,11 @@ export abstract class PublicKeyService {
       return status(404, { message: "No public key registered" });
     }
     return key;
-  }
-
-  static async create({
+  },
+  create: async ({
     userId,
     publicKey,
-  }: PublicKeyModel["publicKeyParameters"]) {
+  }: PublicKeyModel["publicKeyParameters"]) => {
     const existing = await pg
       .select()
       .from(userPublicKey)
@@ -40,12 +39,11 @@ export abstract class PublicKeyService {
       return status(500, { message: "Failed to create public key" });
     }
     return key;
-  }
-
-  static async update({
+  },
+  update: async ({
     userId,
     publicKey,
-  }: PublicKeyModel["publicKeyParameters"]) {
+  }: PublicKeyModel["publicKeyParameters"]) => {
     const [key] = await pg
       .update(userPublicKey)
       .set({ publicKey, updatedAt: new Date() })
@@ -55,11 +53,10 @@ export abstract class PublicKeyService {
       return status(404, { message: "No public key registered" });
     }
     return key;
-  }
-
-  static async delete({
+  },
+  delete: async ({
     userId,
-  }: Pick<PublicKeyModel["publicKeyParameters"], "userId">) {
+  }: Pick<PublicKeyModel["publicKeyParameters"], "userId">) => {
     const [key] = await pg
       .delete(userPublicKey)
       .where(eq(userPublicKey.userId, userId))
@@ -68,5 +65,5 @@ export abstract class PublicKeyService {
       return status(404, { message: "No public key registered" });
     }
     return key;
-  }
-}
+  },
+};

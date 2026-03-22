@@ -1,8 +1,8 @@
 import { Elysia } from "elysia";
-import { auth } from "../lib/auth";
 import { redisPub, redisSub } from "../db/redis";
-import { WsClientMessage, WsServerMessage } from "./types";
+import { auth } from "../lib/auth";
 import type { WsServerMessage as WsServerMessageType } from "./types";
+import { WsClientMessage, WsServerMessage } from "./types";
 
 const activeSubs = new Map<
   string,
@@ -12,7 +12,9 @@ const activeSubs = new Map<
 export const webSocketPlugin = new Elysia({ name: "websocket" })
   .resolve(async ({ status, request: { headers } }) => {
     const session = await auth.api.getSession({ headers });
-    if (!session) return status(401);
+    if (!session) {
+      return status(401);
+    }
     return { user: session.user };
   })
   .ws("/ws/chat", {
@@ -34,11 +36,13 @@ export const webSocketPlugin = new Elysia({ name: "websocket" })
       activeSubs.set(ws.id, { handler, heartbeat });
 
       const pendingMessages = await redisPub.lrange(`queue:${user.id}`, 0, -1);
-      for (const msg of pendingMessages) ws.send(JSON.parse(msg));
+      for (const msg of pendingMessages) {
+        ws.send(JSON.parse(msg));
+      }
       await redisPub.del(`queue:${user.id}`);
     },
     message: async (ws, body) => {
-      if (body.type == "chat") {
+      if (body.type === "chat") {
         const user = ws.data.user;
         const online = await redisPub.exists(`presence:${body.receiverId}`);
         const res: WsServerMessageType = {
