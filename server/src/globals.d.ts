@@ -11,5 +11,8 @@ declare module "bun" {
     DATABASE_URL: string;
     REDIS_PORT: string;
     REDIS_URL: string;
+    RP_ID: string;
+    RP_NAME: string;
+    ORIGIN: string;
   }
 }

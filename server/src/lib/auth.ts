@@ -8,7 +8,7 @@ import { passkey } from "@better-auth/passkey";
 
 export const auth = betterAuth({
   basePath: "/auth",
-  trustedOrigins: ["http://localhost:5173"],
+  trustedOrigins: [Bun.env.ORIGIN],
   database: drizzleAdapter(pg, {
     provider: "pg",
     schema,
@@ -16,7 +16,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [openAPI(), passkey()],
+  plugins: [
+    openAPI(),
+    passkey({
+      rpID: Bun.env.RP_ID,
+      rpName: Bun.env.RP_NAME,
+      origin: Bun.env.ORIGIN,
+    }),
+  ],
 });
 
 let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>;
