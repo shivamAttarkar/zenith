@@ -1,11 +1,10 @@
 import { Kind, type TObject } from "@sinclair/typebox";
+import type { Table } from "drizzle-orm";
 import {
+  type BuildSchema,
   createInsertSchema,
   createSelectSchema,
-  type BuildSchema,
 } from "drizzle-typebox";
-
-import type { Table } from "drizzle-orm";
 
 type Spread<
   T extends TObject | Table,
@@ -20,8 +19,8 @@ type Spread<
         ? BuildSchema<"select", T["_"]["columns"], undefined>["properties"]
         : Mode extends "insert"
           ? BuildSchema<"insert", T["_"]["columns"], undefined>["properties"]
-          : {}
-      : {};
+          : Record<string, never>
+      : Record<string, never>;
 
 /**
  * Spread a Drizzle schema into a plain object
@@ -34,7 +33,7 @@ export const spread = <
   mode?: Mode,
 ): Spread<T, Mode> => {
   const newSchema: Record<string, unknown> = {};
-  let table;
+  let table: TObject;
 
   switch (mode) {
     case "insert":
@@ -52,13 +51,17 @@ export const spread = <
       break;
 
     default:
-      if (!(Kind in schema)) throw new Error("Expect a schema");
+      if (!(Kind in schema)) {
+        throw new Error("Expect a schema");
+      }
       table = schema;
   }
 
-  for (const key of Object.keys(table.properties))
+  for (const key of Object.keys(table.properties)) {
     newSchema[key] = table.properties[key];
+  }
 
+  // biome-ignore lint/suspicious/noExplicitAny: complex conditional type not verifiable at return site
   return newSchema as any;
 };
 
@@ -81,7 +84,13 @@ export const spreads = <
   const newSchema: Record<string, unknown> = {};
   const keys = Object.keys(models);
 
-  for (const key of keys) newSchema[key] = spread(models[key]!, mode);
+  for (const key of keys) {
+    const model = models[key];
+    if (model) {
+      newSchema[key] = spread(model, mode);
+    }
+  }
 
+  // biome-ignore lint/suspicious/noExplicitAny: complex conditional type not verifiable at return site
   return newSchema as any;
 };

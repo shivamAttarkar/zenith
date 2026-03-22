@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { authPlugin } from "../../lib/auth";
-import { FriendRequestService } from "./service";
 import { FriendRequestModel } from "./model";
+import { FriendRequestService } from "./service";
 
 export const friendRequestRoutes = new Elysia({
   tags: ["friend-request"],

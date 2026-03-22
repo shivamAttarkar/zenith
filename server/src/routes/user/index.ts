@@ -1,6 +1,6 @@
 import Elysia from "elysia";
-import { UserService } from "./service";
 import { UserModel } from "./model";
+import { UserService } from "./service";
 
 export const userRoutes = new Elysia({ tags: ["user"], prefix: "/user" })
   .get(
@@ -10,8 +10,8 @@ export const userRoutes = new Elysia({ tags: ["user"], prefix: "/user" })
     },
     {
       response: {
-        200: UserModel["userResponse"],
-        404: UserModel["userErrorResponse"],
+        200: UserModel.userResponse,
+        404: UserModel.userErrorResponse,
       },
     },
   )
@@ -21,10 +21,10 @@ export const userRoutes = new Elysia({ tags: ["user"], prefix: "/user" })
       return UserService.search({ name: query.name, email: query.email });
     },
     {
-      query: UserModel["userQueryParams"],
+      query: UserModel.userQueryParams,
       response: {
-        200: UserModel["userListResponse"],
-        400: UserModel["userErrorResponse"],
+        200: UserModel.userListResponse,
+        400: UserModel.userErrorResponse,
       },
     },
   );

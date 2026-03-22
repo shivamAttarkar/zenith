@@ -1,10 +1,9 @@
-import { Elysia } from "elysia";
-import { auth, authPlugin } from "./lib/auth";
-import { pg } from "./db/pg";
-import { redisPub } from "./db/redis";
 import cors from "@elysiajs/cors";
 import openapi from "@elysiajs/openapi";
-import { authOpenAPI } from "./lib/auth";
+import { Elysia } from "elysia";
+import { pg } from "./db/pg";
+import { redisPub } from "./db/redis";
+import { auth, authOpenAPI, authPlugin } from "./lib/auth";
 import { routes } from "./routes";
 import { webSocketPlugin } from "./ws";
 import "./env";
