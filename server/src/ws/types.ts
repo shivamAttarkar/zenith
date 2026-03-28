@@ -5,6 +5,7 @@ const WsChatPayload = t.Union([
   t.Object({
     format: t.Literal("binary"),
     msg: t.String({ contentEncoding: "base64" }),
+    mimeType: t.String(),
   }),
 ]);
 

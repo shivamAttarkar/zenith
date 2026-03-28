@@ -24,10 +24,10 @@ export const friendRequest = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    senderId: text("senderId")
+    senderId: text("sender_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    receiverId: text("receiverId")
+    receiverId: text("receiver_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     challenge: text("challenge").notNull(),
