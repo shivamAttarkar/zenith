@@ -4,6 +4,11 @@
   let name = $state('');
   let greetMsg = $state('');
 
+  async function printPass() {
+    const pass = await invoke('get_stronghold_password');
+    console.log(pass);
+  }
+
   async function greet(event: Event) {
     event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -32,6 +37,8 @@
     <button type="submit">Greet</button>
   </form>
   <p>{greetMsg}</p>
+
+  <button onclick={printPass}>Print Pass</button>
 </main>
 
 <style>

@@ -5,5 +5,7 @@
  */
 export const config = {
   backendURL: 'localhost:3000',
-  dbName: 'sqlite:zenith.db'
+  dbName: 'sqlite:zenith.db',
+  vaultName: 'vault.hold',
+  globalStoreName: 'settings.json'
 };

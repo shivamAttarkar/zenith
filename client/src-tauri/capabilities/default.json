@@ -9,6 +9,11 @@
     "core:default",
     "opener:default",
     "sql:default",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    "stronghold:default",
+    "stronghold:allow-destroy",
+    "store:default",
+    "fs:default",
+    "fs:allow-remove"
   ]
 }
