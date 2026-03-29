@@ -4,6 +4,6 @@
  * and store the configs inside store
  */
 export const config = {
-  backendURL: 'http://localhost:3000',
+  backendURL: 'localhost:3000',
   dbName: 'sqlite:zenith.db'
 };
