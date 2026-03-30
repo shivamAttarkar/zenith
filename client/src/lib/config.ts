@@ -4,7 +4,8 @@
  * and store the configs inside store
  */
 export const config = {
-  backendURL: 'localhost:3000',
+  backendURL: 'http://localhost:3000',
+  backendOrigin: 'localhost:3000',
   dbName: 'sqlite:zenith.db',
   vaultName: 'vault.hold',
   globalStoreName: 'settings.json'
