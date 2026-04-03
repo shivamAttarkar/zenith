@@ -36,6 +36,9 @@ export const vault = {
     await client.getStore().remove(key);
     await stronghold.save();
   },
+  async hasPrivateKey(): Promise<boolean> {
+    return (await vault.get('privateKey')) !== null;
+  },
   async getPrivateKey(): Promise<string | null> {
     return vault.get('privateKey');
   },

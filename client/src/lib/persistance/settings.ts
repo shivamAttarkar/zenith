@@ -5,14 +5,14 @@ import { config } from '$lib/config';
 type Settings = {
   theme: 'light' | 'dark';
   passkeyRegistered: boolean;
-  rsaKeysPresent: boolean;
+  ecdhKeysPresent: boolean;
   publicKey: string | undefined;
 };
 
 const DEFAULTS: Settings = {
   theme: 'light',
   passkeyRegistered: false,
-  rsaKeysPresent: false,
+  ecdhKeysPresent: false,
   publicKey: undefined
 };
 
