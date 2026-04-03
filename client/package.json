@@ -25,14 +25,17 @@
     "@tauri-apps/plugin-sql": "~2.3.2",
     "@tauri-apps/plugin-store": "~2",
     "@tauri-apps/plugin-stronghold": "~2",
+    "@xstate/svelte": "^5.0.0",
     "better-auth": "^1.5.6",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.2",
+    "xstate": "^5.30.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.3",
-    "elysia": "^1.4.28",
     "@eslint/js": "^10.0.1",
     "@libsql/client": "^0.17.2",
+    "@statelyai/inspect": "^0.4.0",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.55.0",
     "@sveltejs/vite-plugin-svelte": "^5.1.1",
@@ -42,6 +45,7 @@
     "@tauri-apps/cli": "^2.10.1",
     "@types/node": "^24.12.0",
     "drizzle-kit": "^0.31.10",
+    "elysia": "^1.4.28",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.16.0",

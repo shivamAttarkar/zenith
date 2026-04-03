@@ -7,13 +7,15 @@ type Settings = {
   passkeyRegistered: boolean;
   ecdhKeysPresent: boolean;
   publicKey: string | undefined;
+  inspectEnabled: boolean;
 };
 
 const DEFAULTS: Settings = {
   theme: 'light',
   passkeyRegistered: false,
   ecdhKeysPresent: false,
-  publicKey: undefined
+  publicKey: undefined,
+  inspectEnabled: true
 };
 
 let tauriStore: Awaited<ReturnType<typeof load>>;
