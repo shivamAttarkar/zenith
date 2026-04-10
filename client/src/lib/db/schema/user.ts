@@ -6,6 +6,7 @@ export const user = sqliteTable('user', {
   email: text('email').notNull().unique(),
   image: text('image'),
   updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .$default(() => new Date())
     .$onUpdate(() => new Date())
     .notNull()
 });
