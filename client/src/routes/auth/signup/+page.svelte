@@ -56,7 +56,7 @@
         form.handleSubmit();
       }}
     >
-      <form.Field name="username" validators={{ onChange: usernameSchema }}>
+      <form.Field name="username" validators={{ onBlur: usernameSchema }}>
         {#snippet children(field)}
           <fieldset class="fieldset">
             <legend class="fieldset-legend">Username</legend>
@@ -82,7 +82,7 @@
         {/snippet}
       </form.Field>
 
-      <form.Field name="email" validators={{ onChange: emailSchema }}>
+      <form.Field name="email" validators={{ onBlur: emailSchema }}>
         {#snippet children(field)}
           <fieldset class="fieldset">
             <legend class="fieldset-legend">Email</legend>
@@ -108,7 +108,7 @@
         {/snippet}
       </form.Field>
 
-      <form.Field name="password" validators={{ onChange: passwordSchema }}>
+      <form.Field name="password" validators={{ onBlur: passwordSchema }}>
         {#snippet children(field)}
           <fieldset class="fieldset">
             <legend class="fieldset-legend">Password</legend>
