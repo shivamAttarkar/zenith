@@ -58,12 +58,28 @@ export const PasskeyMachine = passkeySetup.createMachine({
     registerPasskeyPage: {
       entry: 'gotoPasskey',
       on: {
-        registerPasskey: { target: 'registeringPasskey', actions: 'clearError' }
+        registerPasskey: { target: 'registeringPasskey', actions: 'clearError' },
+        useExistingPasskey: { target: 'authenticatingWithPasskey', actions: 'clearError' }
       }
     },
     registeringPasskey: {
       invoke: {
         src: 'registerPasskey',
+        onDone: { target: 'passkeyRegistered' },
+        onError: {
+          target: 'registerPasskeyPage',
+          actions: {
+            type: 'setError',
+            params: ({ event }) => ({
+              message: (event.error as BetterFetchError)?.message ?? generic_error
+            })
+          }
+        }
+      }
+    },
+    authenticatingWithPasskey: {
+      invoke: {
+        src: 'passkeyLogin',
         onDone: { target: 'passkeyRegistered' },
         onError: {
           target: 'registerPasskeyPage',

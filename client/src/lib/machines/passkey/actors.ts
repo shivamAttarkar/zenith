@@ -11,6 +11,14 @@ export const registerPasskey = fromPromise(async () => {
   return data;
 });
 
+export const passkeyLogin = fromPromise(async () => {
+  const { data, error } = await authClient.signIn.passkey();
+  if (error) {
+    throw error;
+  }
+  return data;
+});
+
 export const checkPasskey = fromPromise(async () => {
   const { data, error } = await authClient.passkey.listUserPasskeys();
   if (error) {
