@@ -40,7 +40,7 @@ export const setECDHKeys = fromPromise(async () => {
     client.api.v1['public-key'].get()
   ]);
 
-  if (fetchError) {
+  if (fetchError && fetchError.status !== 404) {
     throw fetchError;
   }
   if (privateKeyExists && serverKey?.publicKey) {
