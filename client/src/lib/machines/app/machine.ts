@@ -3,6 +3,7 @@ import * as AppActors from './actors';
 import type { AppContext, AppEvents } from './types';
 import { AuthMachine } from '$lib/machines/auth/machine';
 import { PasskeyMachine } from '$lib/machines/passkey/machine';
+import { WsMachine } from '$lib/machines/ws/machine';
 import { BetterFetchError } from '@better-fetch/fetch';
 import { generic_error } from '$lib/constants';
 import { page } from '$app/state';
@@ -17,7 +18,8 @@ const AppMachineSetup = setup({
   actors: {
     ...AppActors,
     AuthMachine,
-    PasskeyMachine
+    PasskeyMachine,
+    WsMachine
   },
   actions: {
     setError: assign({
@@ -121,7 +123,10 @@ export const AppMachine = AppMachineSetup.createMachine({
     idle: {
       tags: ['ui'],
       entry: 'gotoHome',
-      invoke: { src: 'sessionWatcher' },
+      invoke: [
+        { src: 'sessionWatcher' },
+        { src: 'WsMachine', id: 'wsMachine' }
+      ],
       on: { logout: 'loggingOut' }
     },
     loggingOut: {
