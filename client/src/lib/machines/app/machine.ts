@@ -5,6 +5,9 @@ import { AuthMachine } from '$lib/machines/auth/machine';
 import { PasskeyMachine } from '$lib/machines/passkey/machine';
 import { BetterFetchError } from '@better-fetch/fetch';
 import { generic_error } from '$lib/constants';
+import { page } from '$app/state';
+import { resolve } from '$app/paths';
+import { goto } from '$app/navigation';
 
 const AppMachineSetup = setup({
   types: {
@@ -20,7 +23,12 @@ const AppMachineSetup = setup({
     setError: assign({
       error: (_, params: { message: string }) => params.message
     }),
-    clearError: assign({ error: null })
+    clearError: assign({ error: null }),
+    gotoHome: () => {
+      if (page.url.pathname !== '/home') {
+        goto(resolve('/home'));
+      }
+    }
   }
 });
 
@@ -109,6 +117,7 @@ export const AppMachine = AppMachineSetup.createMachine({
       }
     },
     idle: {
+      entry: 'gotoHome',
       invoke: { src: 'sessionWatcher' },
       on: { logout: 'loggingOut' }
     },
