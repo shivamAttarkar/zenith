@@ -47,6 +47,7 @@ export const WsServerMessage = t.Union([
   t.Object({
     type: t.Literal("friend-request-accepted"),
     friendRequestId: t.String(),
+    otherUserId: t.String(),
   }),
   t.Object({
     type: t.Literal("friend-request-rejected"),

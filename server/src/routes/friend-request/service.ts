@@ -262,11 +262,11 @@ export const FriendRequestService = {
       await Promise.all([
         sendWSMessageToUser({
           userId: req.senderId,
-          msg: { type: "friend-request-accepted", friendRequestId: id },
+          msg: { type: "friend-request-accepted", friendRequestId: id, otherUserId: req.receiverId },
         }),
         sendWSMessageToUser({
           userId: req.receiverId,
-          msg: { type: "friend-request-accepted", friendRequestId: id },
+          msg: { type: "friend-request-accepted", friendRequestId: id, otherUserId: req.senderId },
         }),
       ]);
     } else if (isSender && updated.verifiedBySender) {
