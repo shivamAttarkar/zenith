@@ -88,6 +88,7 @@ export const AppMachine = AppMachineSetup.createMachine({
       }
     },
     unAuthenticated: {
+      tags: ['ui'],
       invoke: {
         id: 'AuthMachine',
         src: 'AuthMachine',
@@ -110,6 +111,7 @@ export const AppMachine = AppMachineSetup.createMachine({
       }
     },
     configurePasskey: {
+      tags: ['ui'],
       invoke: {
         id: 'PasskeyMachine',
         src: 'PasskeyMachine',
@@ -117,11 +119,13 @@ export const AppMachine = AppMachineSetup.createMachine({
       }
     },
     idle: {
+      tags: ['ui'],
       entry: 'gotoHome',
       invoke: { src: 'sessionWatcher' },
       on: { logout: 'loggingOut' }
     },
     loggingOut: {
+      tags: ['ui'],
       invoke: {
         src: 'logout',
         onDone: {
