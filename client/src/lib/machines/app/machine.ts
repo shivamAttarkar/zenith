@@ -81,6 +81,7 @@ export const AppMachine = AppMachineSetup.createMachine({
     },
     unAuthenticated: {
       invoke: {
+        id: 'AuthMachine',
         src: 'AuthMachine',
         onDone: { target: 'loadSession' }
       }
@@ -102,6 +103,7 @@ export const AppMachine = AppMachineSetup.createMachine({
     },
     configurePasskey: {
       invoke: {
+        id: 'PasskeyMachine',
         src: 'PasskeyMachine',
         onDone: { target: 'idle' }
       }
