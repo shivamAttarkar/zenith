@@ -1,8 +1,8 @@
 [package]
-name = "client"
+name = "zenith-client"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A client for zenith"
+authors = ["shivam attarkar"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
