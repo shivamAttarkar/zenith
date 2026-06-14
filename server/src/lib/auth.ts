@@ -8,7 +8,17 @@ import * as schema from "../db/schema/auth";
 
 export const auth = betterAuth({
   basePath: "/auth",
-  trustedOrigins: [Bun.env.ORIGIN],
+  trustedOrigins: [
+    Bun.env.ORIGIN,
+    ...(Bun.env.TRUSTED_ORIGINS?.split(",") ?? []),
+  ],
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: Bun.env.NODE_ENV === "production",
+      partitioned: Bun.env.NODE_ENV === "production",
+    },
+  },
   database: drizzleAdapter(pg, {
     provider: "pg",
     schema,
