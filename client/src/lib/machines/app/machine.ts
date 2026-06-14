@@ -13,6 +13,9 @@ const appSetup = setup({
       };
     },
   },
+  guards: {
+    hasSession: ({ context }) => context.user !== undefined,
+  },
   actors: {
     loadTheme: fromPromise(async (): Promise<string | undefined> => {
       const store = await load("settings.json");
@@ -69,8 +72,12 @@ const appMachine = appSetup.createMachine({
           },
         },
       },
-      onDone: "ready",
+      onDone: [
+        { target: "ready", guard: "hasSession" },
+        { target: "authenticating" },
+      ],
     },
+    authenticating: {},
     ready: {},
   },
 });

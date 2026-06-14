@@ -4,14 +4,23 @@
 // See: https://v2.tauri.app/start/frontend/sveltekit/ for more info
 import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+import path from "path";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
+  compilerOptions: {
+    experimental: {
+      async: true,
+    },
+  },
   kit: {
     adapter: adapter({
       fallback: "index.html",
     }),
+    alias: {
+      $server: path.resolve("../server/src"),
+    },
   },
 };
 
