@@ -8,9 +8,7 @@ import { routes } from "./routes";
 import { webSocketPlugin } from "./ws";
 import "./env";
 
-const app = new Elysia();
-
-app
+const app = new Elysia()
   .use(cors())
   .use(authPlugin)
   .use(webSocketPlugin)
@@ -46,6 +44,8 @@ app.listen({
   port: Bun.env.PORT,
   reusePort: true,
 });
+
+export type App = typeof app;
 
 if (Bun.env.NODE_ENV === "development") {
   console.log(

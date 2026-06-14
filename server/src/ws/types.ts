@@ -5,6 +5,7 @@ const WsChatPayload = t.Union([
   t.Object({
     format: t.Literal("binary"),
     msg: t.String({ contentEncoding: "base64" }),
+    mimeType: t.String(),
   }),
 ]);
 
@@ -46,6 +47,7 @@ export const WsServerMessage = t.Union([
   t.Object({
     type: t.Literal("friend-request-accepted"),
     friendRequestId: t.String(),
+    otherUserId: t.String(),
   }),
   t.Object({
     type: t.Literal("friend-request-rejected"),
