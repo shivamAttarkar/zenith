@@ -1,16 +1,13 @@
 <script>
     import "./layout.css";
-    import { useMachine, useSelector } from "@xstate/svelte";
-    import appMachine from "../lib/machines/app/machine";
+    import { appMachineRef } from "$lib/machines/index";
+    import { startRouter } from "$lib/routing";
 
     let { children } = $props();
-    const { actorRef } = useMachine(appMachine);
-    const context = useSelector(actorRef, (snapshot) => snapshot.context);
-
-    console.log("Context: ", $context);
+    startRouter(appMachineRef);
 </script>
 
-<!-- Status bar background that adapts to the active theme -->
+<!-- Status bar background that adapts to the active theme (android) -->
 <div
     class="fixed top-0 inset-x-0 bg-base-300 z-50"
     style="height: env(safe-area-inset-top)"

@@ -1,6 +1,8 @@
 import { platform } from "@tauri-apps/plugin-os";
 import { load } from "@tauri-apps/plugin-store";
-import { assign, fromPromise, setup } from "xstate";
+import { assign, fromPromise, setup, type ActorRefFrom } from "xstate";
+import { authMachine } from "../auth/machine";
+import { authClient } from "$lib/utils/auth";
 
 const appSetup = setup({
   types: {
@@ -8,9 +10,12 @@ const appSetup = setup({
       platform: ReturnType<typeof platform>;
       theme: string;
       user?: {
+        id: string;
         email: string;
-        username: string;
+        name: string;
+        session: typeof authClient.$Infer.Session;
       };
+      authRef?: ActorRefFrom<typeof authMachine>;
     },
   },
   guards: {
@@ -21,7 +26,15 @@ const appSetup = setup({
       const store = await load("settings.json");
       return await store.get("theme");
     }),
-    loadSession: fromPromise(async () => {}),
+    loadSession: fromPromise(async () => {
+      const res = await authClient.getSession();
+      if (res.error) {
+        // FIXME: handle error more gracefully
+        throw res.error.message;
+      }
+      return res.data;
+    }),
+    authMachine,
   },
 });
 
@@ -63,6 +76,22 @@ const appMachine = appSetup.createMachine({
                 onDone: {
                   target: "done",
                   actions: assign({
+                    user: ({ event }) => {
+                      if (!event.output) {
+                        return undefined;
+                      }
+                      return {
+                        id: event.output.user.id,
+                        name: event.output.user.name,
+                        email: event.output.user.email,
+                        session: event.output,
+                      };
+                    },
+                  }),
+                },
+                onError: {
+                  target: "done",
+                  actions: assign({
                     user: undefined,
                   }),
                 },
@@ -77,7 +106,15 @@ const appMachine = appSetup.createMachine({
         { target: "authenticating" },
       ],
     },
-    authenticating: {},
+    authenticating: {
+      entry: assign({
+        authRef: ({ spawn }) => spawn("authMachine", { id: "auth" }),
+      }),
+      exit: assign({ authRef: undefined }),
+      on: {
+        "xstate.done.actor.auth": { target: "initializing" },
+      },
+    },
     ready: {},
   },
 });
