@@ -109,14 +109,17 @@
             <button class="w-fit ml-auto link text-right text-sm link-hover"
                 >forgot password?</button
             >
-            <Button loading={$authContext.loading} width="fill" class="mt-4" type="submit"
-                >login</Button
+            <Button
+                loading={$authContext.loading}
+                width="fill"
+                class="mt-4"
+                type="submit">login</Button
             >
         </form>
         <div class="divider">Or continue with</div>
         <div class="flex">
             <Button icon={KeyIcon} variant="ghost" width="fill" style="outline"
-                >Continue with Google</Button
+                >Continue with Passkey</Button
             >
         </div>
     </div>
