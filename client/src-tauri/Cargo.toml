@@ -1,0 +1,36 @@
+[package]
+name = "zenith-client"
+version = "0.1.0"
+description = "A client for zenith"
+authors = ["shivam attarkar"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "client_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+time = "=0.3.36"
+tauri-plugin-keyring-store = "0.2.0"
+ed25519-dalek = { version = "2.2.0", features = ["rand_core"] }
+rand = "0.8"
+base64 = "0.22.1"
+chacha20poly1305 = "0.10"
+tauri-plugin-store = "2"
+tauri-plugin-os = "2"
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { version = "0.21", default-features = false }
+ndk-context = "0.1"
