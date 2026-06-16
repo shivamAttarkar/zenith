@@ -1,31 +1,42 @@
 import { platform } from "@tauri-apps/plugin-os";
-import { load } from "@tauri-apps/plugin-store";
-import { assign, fromPromise, setup, type ActorRefFrom } from "xstate";
+import { store } from "$lib/utils/store";
+import { assign, fromPromise, setup, and } from "xstate";
 import { authMachine } from "../auth/machine";
 import { authClient } from "$lib/utils/auth";
+import { passkeyMachine } from "../passkey/machine";
+import type { Theme } from "$lib/themes";
 
 const appSetup = setup({
   types: {
     context: {} as {
       platform: ReturnType<typeof platform>;
-      theme: string;
+      theme: Theme;
+      passkeyRegistered: boolean;
       user?: {
         id: string;
         email: string;
         name: string;
         session: typeof authClient.$Infer.Session;
       };
-      authRef?: ActorRefFrom<typeof authMachine>;
+    },
+    children: {} as {
+      auth: "authMachine";
+      passkey: "passkeyMachine";
     },
   },
   guards: {
     hasSession: ({ context }) => context.user !== undefined,
+    hasPasskey: ({ context }) => context.passkeyRegistered,
   },
   actors: {
-    loadTheme: fromPromise(async (): Promise<string | undefined> => {
-      const store = await load("settings.json");
-      return await store.get("theme");
-    }),
+    loadConfig: fromPromise(
+      async (): Promise<{ theme?: Theme; passkeyRegistered?: boolean }> => {
+        return {
+          theme: await store.get("theme"),
+          passkeyRegistered: await store.get("passkeyRegistered"),
+        };
+      },
+    ),
     loadSession: fromPromise(async () => {
       const res = await authClient.getSession();
       if (res.error) {
@@ -34,7 +45,10 @@ const appSetup = setup({
       }
       return res.data;
     }),
+    processPublicKey: fromPromise(async () => {}),
+    initilizeDB: fromPromise(async () => {}),
     authMachine,
+    passkeyMachine,
   },
 });
 
@@ -44,22 +58,25 @@ const appMachine = appSetup.createMachine({
     platform: platform(),
     theme: "light",
     user: undefined,
+    passkeyRegistered: false,
   },
   initial: "initializing",
   states: {
     initializing: {
       type: "parallel",
       states: {
-        theme: {
+        config: {
           initial: "pending",
           states: {
             pending: {
               invoke: {
-                src: "loadTheme",
+                src: "loadConfig",
                 onDone: {
                   target: "done",
                   actions: assign({
-                    theme: ({ event }) => event.output ?? "light",
+                    theme: ({ event }) => event.output.theme ?? "light",
+                    passkeyRegistered: ({ event }) =>
+                      event.output.passkeyRegistered ?? false,
                   }),
                 },
               },
@@ -102,20 +119,37 @@ const appMachine = appSetup.createMachine({
         },
       },
       onDone: [
-        { target: "ready", guard: "hasSession" },
+        { target: "ready", guard: and(["hasSession", "hasPasskey"]) },
+        { target: "registeringPasskey", guard: "hasSession" },
         { target: "authenticating" },
       ],
     },
     authenticating: {
-      entry: assign({
-        authRef: ({ spawn }) => spawn("authMachine", { id: "auth" }),
-      }),
-      exit: assign({ authRef: undefined }),
-      on: {
-        "xstate.done.actor.auth": { target: "initializing" },
+      invoke: {
+        src: "authMachine",
+        id: "auth",
+        onDone: { target: "initializing" },
+        onError: {
+          target: "error",
+        },
       },
     },
+    registeringPasskey: {
+      invoke: {
+        src: "passkeyMachine",
+        id: "passkey",
+        onDone: {
+          target: "initializing",
+        },
+        onError: {
+          target: "error",
+        },
+      },
+    },
+    processingPublicKey: {},
+    initializingDB: {},
     ready: {},
+    error: {},
   },
 });
 

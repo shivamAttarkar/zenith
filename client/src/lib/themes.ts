@@ -36,3 +36,5 @@ export const themes = [
   "abyss",
   "silk",
 ] as const;
+
+export type Theme = (typeof themes)[number];

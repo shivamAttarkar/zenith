@@ -1,6 +1,6 @@
-import type { App } from "../../../server/src/index";
+import type { App } from "$server/index";
 import { treaty } from "@elysia/eden";
-import { config } from "./config";
+import { config } from "../config";
 
 // @ts-expect-error - server and client resolve elysia from separate node_modules, causing incompatible types
 const apiClient = treaty<App>(config.serverUrl, {

@@ -15,7 +15,7 @@
     import { useSelector } from "@xstate/svelte";
     const authMachineStore = useSelector(
         appMachineRef,
-        (snapshot) => snapshot.context.authRef,
+        (snapshot) => snapshot.children.auth,
     );
     const authContext = derived(
         authMachineStore,
