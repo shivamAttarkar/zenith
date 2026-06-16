@@ -5,6 +5,8 @@ import { authMachine } from "../auth/machine";
 import { authClient } from "$lib/utils/auth";
 import { passkeyMachine } from "../passkey/machine";
 import type { Theme } from "$lib/themes";
+import { apiClient } from "$lib/utils/api";
+import { crypto } from "$lib/utils/crypto";
 
 const appSetup = setup({
   types: {
@@ -45,7 +47,28 @@ const appSetup = setup({
       }
       return res.data;
     }),
-    processPublicKey: fromPromise(async () => {}),
+    syncPublicKey: fromPromise(async () => {
+      const localKey = await crypto.getPublicKey();
+      const res = await apiClient.api.v1["public-key"].get();
+      if (res.status !== 200 && res.status !== 404) {
+        throw new Error("Failed to fetch public key");
+      }
+      if (res.status === 200 && res.data?.publicKey === localKey) {
+        return;
+      }
+      if (res.status === 200) {
+        const del = await apiClient.api.v1["public-key"].delete();
+        if (del.status !== 200) {
+          throw new Error("Failed to delete stale public key");
+        }
+      }
+      const post = await apiClient.api.v1["public-key"].post({
+        publicKey: localKey,
+      });
+      if (post.status !== 200) {
+        throw new Error("Failed to upload public key");
+      }
+    }),
     initilizeDB: fromPromise(async () => {}),
     authMachine,
     passkeyMachine,
@@ -79,6 +102,7 @@ const appMachine = appSetup.createMachine({
                       event.output.passkeyRegistered ?? false,
                   }),
                 },
+                onError: { target: "#app.error" },
               },
             },
             done: { type: "final" },
@@ -119,7 +143,10 @@ const appMachine = appSetup.createMachine({
         },
       },
       onDone: [
-        { target: "ready", guard: and(["hasSession", "hasPasskey"]) },
+        {
+          target: "syncingPublicKey",
+          guard: and(["hasSession", "hasPasskey"]),
+        },
         { target: "registeringPasskey", guard: "hasSession" },
         { target: "authenticating" },
       ],
@@ -146,7 +173,17 @@ const appMachine = appSetup.createMachine({
         },
       },
     },
-    processingPublicKey: {},
+    syncingPublicKey: {
+      invoke: {
+        src: "syncPublicKey",
+        onDone: {
+          target: "ready",
+        },
+        onError: {
+          target: "error",
+        },
+      },
+    },
     initializingDB: {},
     ready: {},
     error: {},
