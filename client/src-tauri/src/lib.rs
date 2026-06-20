@@ -27,6 +27,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             crypto::get_public_key,
             crypto::set_secret_key,
+            crypto::derive_shared_secret,
+            crypto::encrypt_for,
+            crypto::decrypt_from,
             crypto::sign,
             crypto::verify,
             crypto::encrypt,

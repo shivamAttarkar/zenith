@@ -16,7 +16,7 @@
 </script>
 
 <main class="flex flex-col flex-1 overflow-hidden p-4">
-    <p class="inline-flex items-center gap-2">Choose a theme</p>
+    <h2 class="text-xl font-semibold">Themes</h2>
     <div class="my-4 min-h-0 flex-1 overflow-y-auto rounded-box bg-base-300/90">
         <div
             class="rounded-box grid grid-cols-1 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"

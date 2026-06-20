@@ -9,6 +9,21 @@ export const crypto = {
     return invoke("set_secret_key", { key });
   },
 
+  deriveSharedSecret(peerPubKeyB64: string, userId: string): Promise<void> {
+    return invoke("derive_shared_secret", {
+      peerPubKeyB64,
+      userId,
+    });
+  },
+
+  encryptFor(userId: string, data: string): Promise<string> {
+    return invoke("encrypt_for", { userId, data });
+  },
+
+  decryptFrom(userId: string, data: string): Promise<string> {
+    return invoke("decrypt_from", { userId, data });
+  },
+
   sign(data: string): Promise<string> {
     return invoke("sign", { data });
   },

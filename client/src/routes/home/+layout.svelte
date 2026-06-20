@@ -32,17 +32,12 @@
                 <li>
                     <a
                         href="/home/chats"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right {page.url.pathname.startsWith(
+                            '/home/chats',
+                        )
+                            ? 'bg-primary/20'
+                            : ''}"
                         data-tip="Chats"
-                        class:active={page.url.pathname.startsWith(
-                            "/home/chats",
-                        )}
-                        class:glass={page.url.pathname.startsWith(
-                            "/home/chats",
-                        )}
-                        class:bg-base-100={page.url.pathname.startsWith(
-                            "/home/chats",
-                        )}
                     >
                         <MessagesIcon class="size-6"></MessagesIcon>
                         <span class="is-drawer-close:hidden">Chats</span>
@@ -51,17 +46,12 @@
                 <li>
                     <a
                         href="/home/friends"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right {page.url.pathname.startsWith(
+                            '/home/friends',
+                        )
+                            ? 'bg-primary/20'
+                            : ''}"
                         data-tip="Friends"
-                        class:active={page.url.pathname.startsWith(
-                            "/home/friends",
-                        )}
-                        class:glass={page.url.pathname.startsWith(
-                            "/home/friends",
-                        )}
-                        class:bg-base-100={page.url.pathname.startsWith(
-                            "/home/friends",
-                        )}
                     >
                         <FriendsIcon class="size-6"></FriendsIcon>
                         <span class="is-drawer-close:hidden">Friends</span>
@@ -70,17 +60,12 @@
                 <li>
                     <a
                         href="/home/theme"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right {page.url.pathname.startsWith(
+                            '/home/theme',
+                        )
+                            ? 'bg-primary/20'
+                            : ''}"
                         data-tip="Theme"
-                        class:active={page.url.pathname.startsWith(
-                            "/home/theme",
-                        )}
-                        class:glass={page.url.pathname.startsWith(
-                            "/home/theme",
-                        )}
-                        class:bg-base-100={page.url.pathname.startsWith(
-                            "/home/theme",
-                        )}
                     >
                         <ThemeIcon class="size-6"></ThemeIcon>
                         <span class="is-drawer-close:hidden">Theme</span>
@@ -119,7 +104,7 @@
                             <span class="p-2">{$user?.name || "User"}</span>
                             <li>
                                 <button
-                                    class="btn-error btn rounded-box"
+                                    class="btn-error btn btn-soft rounded-box"
                                     onclick={() =>
                                         appMachineRef.send({ type: "LOGOUT" })}
                                 >
