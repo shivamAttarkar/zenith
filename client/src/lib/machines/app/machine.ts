@@ -7,6 +7,7 @@ import { passkeyMachine } from "../passkey/machine";
 import type { Theme } from "$lib/themes";
 import { apiClient } from "$lib/utils/api";
 import { crypto } from "$lib/utils/crypto";
+import { migrate } from "$lib/db/migrate";
 
 const appSetup = setup({
   types: {
@@ -69,7 +70,9 @@ const appSetup = setup({
         throw new Error("Failed to upload public key");
       }
     }),
-    initilizeDB: fromPromise(async () => {}),
+    initilizeDB: fromPromise(async () => {
+      await migrate();
+    }),
     authMachine,
     passkeyMachine,
   },
@@ -177,14 +180,20 @@ const appMachine = appSetup.createMachine({
       invoke: {
         src: "syncPublicKey",
         onDone: {
-          target: "ready",
+          target: "initializingDB",
         },
         onError: {
           target: "error",
         },
       },
     },
-    initializingDB: {},
+    initializingDB: {
+      invoke: {
+        src: "initilizeDB",
+        onDone: { target: "ready" },
+        onError: { target: "error" },
+      },
+    },
     ready: {},
     error: {},
   },

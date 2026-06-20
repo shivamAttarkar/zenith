@@ -10,6 +10,9 @@
     "opener:default",
     "keyring-store:default",
     "store:default",
-    "os:default"
+    "os:default",
+    "sql:allow-execute",
+    "sql:allow-select",
+    "sql:allow-load"
   ]
 }

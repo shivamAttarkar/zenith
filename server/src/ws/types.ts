@@ -56,6 +56,11 @@ export const WsServerMessage = t.Union([
     friendRequestId: t.String(),
   }),
   t.Object({
+    type: t.Literal("public-key-updated"),
+    userId: t.String(),
+    publicKey: t.String(),
+  }),
+  t.Object({
     type: t.Literal("error"),
     error: t.Object({
       code: t.String(),
