@@ -37,6 +37,12 @@
                         class:active={page.url.pathname.startsWith(
                             "/home/chats",
                         )}
+                        class:glass={page.url.pathname.startsWith(
+                            "/home/chats",
+                        )}
+                        class:bg-base-100={page.url.pathname.startsWith(
+                            "/home/chats",
+                        )}
                     >
                         <MessagesIcon class="size-6"></MessagesIcon>
                         <span class="is-drawer-close:hidden">Chats</span>
@@ -50,6 +56,12 @@
                         class:active={page.url.pathname.startsWith(
                             "/home/friends",
                         )}
+                        class:glass={page.url.pathname.startsWith(
+                            "/home/friends",
+                        )}
+                        class:bg-base-100={page.url.pathname.startsWith(
+                            "/home/friends",
+                        )}
                     >
                         <FriendsIcon class="size-6"></FriendsIcon>
                         <span class="is-drawer-close:hidden">Friends</span>
@@ -61,6 +73,12 @@
                         class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                         data-tip="Theme"
                         class:active={page.url.pathname.startsWith(
+                            "/home/theme",
+                        )}
+                        class:glass={page.url.pathname.startsWith(
+                            "/home/theme",
+                        )}
+                        class:bg-base-100={page.url.pathname.startsWith(
                             "/home/theme",
                         )}
                     >
@@ -100,7 +118,11 @@
                         <div class="join join-vertical w-full">
                             <span class="p-2">{$user?.name || "User"}</span>
                             <li>
-                                <button class="btn-error btn rounded-box" onclick={() => appMachineRef.send({ type: "LOGOUT" })}>
+                                <button
+                                    class="btn-error btn rounded-box"
+                                    onclick={() =>
+                                        appMachineRef.send({ type: "LOGOUT" })}
+                                >
                                     <LogoutIcon></LogoutIcon>
                                     logout
                                 </button>

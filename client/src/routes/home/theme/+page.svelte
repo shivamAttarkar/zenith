@@ -1,10 +1,9 @@
 <script lang="ts">
     import { themes } from "$lib/themes";
     import { load } from "@tauri-apps/plugin-store";
-    import { appMachineRef } from "$lib/machines/index";
 
     let selectedTheme = $state(
-        appMachineRef.getSnapshot().context.theme ?? "system",
+        document.documentElement.getAttribute("data-theme") ?? "system",
     );
 
     $effect(() => {
