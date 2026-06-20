@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/sqlite-proxy";
 import * as schema from "./schema";
 import { config } from "../config";
 
-const db = await Database.load(config.dbName);
+export const db = await Database.load(config.dbName);
 
 function isSelectQuery(sql: string): boolean {
   const selectRegex = /^\s*SELECT\b/i;

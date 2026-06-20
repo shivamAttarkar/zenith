@@ -1,9 +1,11 @@
 <script lang="ts">
     import { themes } from "$lib/themes";
-    import BackIcon from "$lib/icons/back.svg?component";
     import { load } from "@tauri-apps/plugin-store";
+    import { appMachineRef } from "$lib/machines/index";
 
-    let selectedTheme = $state("system");
+    let selectedTheme = $state(
+        appMachineRef.getSnapshot().context.theme ?? "system",
+    );
 
     $effect(() => {
         if (selectedTheme === "system") {
@@ -15,12 +17,7 @@
 </script>
 
 <main class="flex flex-col flex-1 overflow-hidden p-4">
-    <p class="inline-flex items-center gap-2">
-        <button class="btn btn-circle">
-            <BackIcon class="size-5" stroke-width="4" />
-        </button>
-        Choose a theme
-    </p>
+    <p class="inline-flex items-center gap-2">Choose a theme</p>
     <div class="my-4 min-h-0 flex-1 overflow-y-auto rounded-box bg-base-300/90">
         <div
             class="rounded-box grid grid-cols-1 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
@@ -34,7 +31,11 @@
                         >
                     {/if}
                     <button
-                        onclick={() => (selectedTheme = theme)}
+                        onclick={async () => {
+                            selectedTheme = theme;
+                            const store = await load("settings.json");
+                            await store.set("theme", selectedTheme);
+                        }}
                         class="active:-translate-x-0.5 active:-translate-y-0.5 active:scale-105 active:shadow-lg active:border-base-content/40 border-base-content/20 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:scale-105 hover:shadow-lg hover:border-base-content/40 overflow-hidden rounded-lg border outline-2 outline-offset-2 outline-transparent cursor-pointer transition text-left"
                         class:outline-border-300={selectedTheme === theme}
                         class:opacity-30={selectedTheme === theme}
@@ -100,11 +101,4 @@
             {/each}
         </div>
     </div>
-    <button
-        class="btn btn-secondary m-2 w-fit ml-auto"
-        onclick={async () => {
-            const store = await load("settings.json");
-            await store.set("theme", selectedTheme);
-        }}>Apply</button
-    >
 </main>

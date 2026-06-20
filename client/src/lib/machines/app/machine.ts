@@ -8,6 +8,7 @@ import type { Theme } from "$lib/themes";
 import { apiClient } from "$lib/utils/api";
 import { crypto } from "$lib/utils/crypto";
 import { migrate } from "$lib/db/migrate";
+import { db } from "$lib/db/sqlite";
 
 const appSetup = setup({
   types: {
@@ -22,6 +23,7 @@ const appSetup = setup({
         session: typeof authClient.$Infer.Session;
       };
     },
+    events: {} as { type: "LOGOUT" },
     children: {} as {
       auth: "authMachine";
       passkey: "passkeyMachine";
@@ -73,6 +75,17 @@ const appSetup = setup({
     initilizeDB: fromPromise(async () => {
       await migrate();
     }),
+    logout: fromPromise(async () => {
+      await apiClient.api.v1["public-key"].delete();
+      const tables = await db.select<{ name: string }[]>(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+      );
+      for (const { name } of tables) {
+        await db.execute(`DROP TABLE IF EXISTS "${name}"`);
+      }
+      // await crypto.deleteKeys();
+      await authClient.signOut();
+    }),
     authMachine,
     passkeyMachine,
   },
@@ -99,11 +112,24 @@ const appMachine = appSetup.createMachine({
                 src: "loadConfig",
                 onDone: {
                   target: "done",
-                  actions: assign({
-                    theme: ({ event }) => event.output.theme ?? "light",
-                    passkeyRegistered: ({ event }) =>
-                      event.output.passkeyRegistered ?? false,
-                  }),
+                  actions: [
+                    assign({
+                      theme: ({ event }) => event.output.theme ?? "light",
+                      passkeyRegistered: ({ event }) =>
+                        event.output.passkeyRegistered ?? false,
+                    }),
+                    ({ event }) => {
+                      const theme = event.output.theme;
+                      if (!theme || theme === "system") {
+                        document.documentElement.removeAttribute("data-theme");
+                      } else {
+                        document.documentElement.setAttribute(
+                          "data-theme",
+                          theme,
+                        );
+                      }
+                    },
+                  ],
                 },
                 onError: { target: "#app.error" },
               },
@@ -194,7 +220,24 @@ const appMachine = appSetup.createMachine({
         onError: { target: "error" },
       },
     },
-    ready: {},
+    ready: {
+      on: {
+        LOGOUT: "logout",
+      },
+    },
+    logout: {
+      invoke: {
+        src: "logout",
+        onDone: {
+          target: "initializing",
+          actions: assign({ user: undefined, passkeyRegistered: false }),
+        },
+        onError: {
+          target: "initializing",
+          actions: assign({ user: undefined, passkeyRegistered: false }),
+        },
+      },
+    },
     error: {},
   },
 });
