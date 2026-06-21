@@ -115,6 +115,7 @@ const appSetup = setup({
       await dropAllTables();
       await crypto.deleteContactKeys(contactIds);
       await crypto.reinitKeys();
+      await store.clear();
       await authClient.signOut();
     }),
     webSocket: fromCallback(({ sendBack }) => {
