@@ -89,26 +89,37 @@
                                 <div
                                     class="flex items-center justify-between gap-2 mt-0.5"
                                 >
-                                    <span
-                                        class="text-sm text-base-content/50 truncate"
-                                    >
-                                        {#if conv.lastMessagePayload}
-                                            {conv.lastMessageSenderId ===
-                                            $currentUser?.id
-                                                ? "You: "
-                                                : ""}{conv.lastMessagePayload}
-                                        {:else}
-                                            No messages yet
-                                        {/if}
-                                    </span>
-                                    {#if conv.unreadCount > 0}
-                                        <span
-                                            class="badge badge-primary badge-sm shrink-0 rounded-full min-w-4 justify-center"
-                                        >
-                                            {conv.unreadCount > 99
-                                                ? "99+"
-                                                : conv.unreadCount}
+                                    {#if !conv.contactPublicKey}
+                                        <span class="text-sm text-base-content/40 truncate italic">
+                                            Unavailable
                                         </span>
+                                    {:else if conv.friendRequestStatus === "needs_reverification"}
+                                        <span class="text-sm text-warning truncate">
+                                            Re-verify required
+                                        </span>
+                                        <span class="badge badge-warning badge-sm shrink-0">!</span>
+                                    {:else}
+                                        <span
+                                            class="text-sm text-base-content/50 truncate"
+                                        >
+                                            {#if conv.lastMessagePayload}
+                                                {conv.lastMessageSenderId ===
+                                                $currentUser?.id
+                                                    ? "You: "
+                                                    : ""}{conv.lastMessagePayload}
+                                            {:else}
+                                                No messages yet
+                                            {/if}
+                                        </span>
+                                        {#if conv.unreadCount > 0}
+                                            <span
+                                                class="badge badge-primary badge-sm shrink-0 rounded-full min-w-4 justify-center"
+                                            >
+                                                {conv.unreadCount > 99
+                                                    ? "99+"
+                                                    : conv.unreadCount}
+                                            </span>
+                                        {/if}
                                     {/if}
                                 </div>
                             </div>

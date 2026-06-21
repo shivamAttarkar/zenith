@@ -15,12 +15,16 @@
         pending: { class: "badge-warning", label: "Pending" },
         accepted: { class: "badge-success", label: "Accepted" },
         rejected: { class: "badge-error", label: "Rejected" },
+        needs_reverification: { class: "badge-warning", label: "Re-verify" },
     } as const;
 
     function needsVerification(
         req: (typeof $friendRequestsStore)[number],
     ): boolean {
-        if (req.status !== "pending") {
+        if (
+            req.status !== "pending" &&
+            req.status !== "needs_reverification"
+        ) {
             return false;
         }
         const isSent = req.senderId === $currentUser?.id;
@@ -90,8 +94,12 @@
                             {name ?? "Unknown"}
                         </span>
                         <span class="text-xs text-base-content/50">
-                            {isSent ? "Sent" : "Received"}
-                            {formatDate(req.createdAt)}
+                            {#if req.status === "needs_reverification"}
+                                Key changed · re-verify required
+                            {:else}
+                                {isSent ? "Sent" : "Received"}
+                                {formatDate(req.createdAt)}
+                            {/if}
                         </span>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">

@@ -35,6 +35,8 @@ pub fn run() {
             crypto::encrypt,
             crypto::decrypt,
             crypto::delete_keys,
+            crypto::reinit_keys,
+            crypto::delete_contact_keys,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -10,8 +10,9 @@ import type { Theme } from "$lib/themes";
 import { apiClient } from "$lib/utils/api";
 import { crypto } from "$lib/utils/crypto";
 import { migrate } from "$lib/db/migrate";
-import { db } from "$lib/db/sqlite";
 import { upsertUser } from "$lib/db/operations/users";
+import { upsertFriendRequest, getAcceptedContactIds } from "$lib/db/operations/friends";
+import { dropAllTables } from "$lib/db/operations/schema";
 
 const appSetup = setup({
   types: {
@@ -97,15 +98,20 @@ const appSetup = setup({
         await upsertUser({ ...input.user, publicKey });
       },
     ),
+    syncFriendRequests: fromPromise(async () => {
+      const { data, error } =
+        await apiClient.api.v1["friend-request"].find.get();
+      if (error || !data) return;
+      for (const req of data) {
+        await upsertFriendRequest(req);
+      }
+    }),
     logout: fromPromise(async () => {
       await apiClient.api.v1["public-key"].delete();
-      const tables = await db.select<{ name: string }[]>(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
-      );
-      for (const { name } of tables) {
-        await db.execute(`DROP TABLE IF EXISTS "${name}"`);
-      }
-      // await crypto.deleteKeys();
+      const contactIds = await getAcceptedContactIds();
+      await dropAllTables();
+      await crypto.deleteContactKeys(contactIds);
+      await crypto.reinitKeys();
       await authClient.signOut();
     }),
     webSocket: fromCallback(({ sendBack }) => {
@@ -266,6 +272,13 @@ const appMachine = appSetup.createMachine({
       invoke: {
         src: "initilizeDB",
         input: ({ context }) => ({ user: context.user }),
+        onDone: { target: "syncingFriendRequests" },
+        onError: { target: "error" },
+      },
+    },
+    syncingFriendRequests: {
+      invoke: {
+        src: "syncFriendRequests",
         onDone: { target: "ready" },
         onError: { target: "error" },
       },

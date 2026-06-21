@@ -7,7 +7,7 @@ export const friendRequests = sqliteTable(
     senderId: text("sender_id").notNull(),
     receiverId: text("receiver_id").notNull(),
     status: text("status", {
-      enum: ["pending", "accepted", "rejected"],
+      enum: ["pending", "accepted", "rejected", "needs_reverification"],
     }).notNull(),
     verifiedBySender: integer("verified_by_sender", { mode: "boolean" })
       .notNull()

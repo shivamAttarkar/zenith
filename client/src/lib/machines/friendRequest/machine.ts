@@ -1,10 +1,14 @@
 import { assign, fromPromise, setup } from "xstate";
 import { startAuthentication } from "@simplewebauthn/browser";
 import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
+import { eq } from "drizzle-orm";
 import { apiClient } from "$lib/utils/api";
 import { appMachineRef } from "$lib/machines";
 import { crypto } from "$lib/utils/crypto";
 import { getContactPublicKey } from "$lib/utils/getContactPublicKey";
+import { deriveChallenge } from "$lib/utils/deriveChallenge";
+import { sqlite } from "$lib/db/sqlite";
+import { friendRequests } from "$lib/db/schema";
 import { upsertFriendRequest } from "$lib/db/operations/friends";
 
 const friendRequestSetup = setup({
@@ -48,7 +52,44 @@ const friendRequestSetup = setup({
           }
           throw new Error(error.value);
         }
-        return data as PublicKeyCredentialRequestOptionsJSON;
+
+        const currentUserId = appMachineRef.getSnapshot().context.user?.id;
+        if (!currentUserId) {
+          throw new Error("Not authenticated");
+        }
+        const [[req], currentUserPublicKey] = await Promise.all([
+          sqlite
+            .select({
+              senderId: friendRequests.senderId,
+              receiverId: friendRequests.receiverId,
+            })
+            .from(friendRequests)
+            .where(eq(friendRequests.id, input.id)),
+          crypto.getPublicKey(),
+        ]);
+        if (!req) {
+          throw new Error("Friend request not found");
+        }
+        const contactId =
+          req.senderId === currentUserId ? req.receiverId : req.senderId;
+        const contactPublicKey = await getContactPublicKey(contactId);
+        const senderKey =
+          req.senderId === currentUserId
+            ? currentUserPublicKey
+            : contactPublicKey;
+        const receiverKey =
+          req.receiverId === currentUserId
+            ? currentUserPublicKey
+            : contactPublicKey;
+        const expected = await deriveChallenge(
+          senderKey,
+          receiverKey,
+          input.id,
+        );
+        if (expected !== data.challenge) {
+          throw new Error("Challenge verification failed");
+        }
+        return data;
       },
     ),
 

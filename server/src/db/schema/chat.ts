@@ -31,7 +31,9 @@ export const friendRequest = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     challenge: text("challenge").notNull(),
-    status: text("status", { enum: ["pending", "accepted", "rejected"] })
+    status: text("status", {
+      enum: ["pending", "accepted", "rejected", "needs_reverification"],
+    })
       .notNull()
       .default("pending"),
     verifiedBySender: boolean("verified_by_sender").notNull().default(false),

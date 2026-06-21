@@ -165,33 +165,61 @@
             {/if}
         </div>
 
-        <div class="shrink-0 border-t border-base-300 px-4 py-3 bg-base-100">
-            <div class="flex items-center gap-2">
-                <input
-                    type="text"
-                    bind:value={inputValue}
-                    onkeydown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            sendMessage();
-                        }
-                    }}
-                    class="input input-bordered w-full"
-                    placeholder="Type a message…"
-                    disabled={sending}
-                />
-                <button
-                    class="btn btn-primary shrink-0"
-                    onclick={sendMessage}
-                    disabled={!inputValue.trim() || sending}
-                >
-                    {#if sending}
-                        <span class="loading loading-spinner loading-sm"></span>
-                    {:else}
-                        Send
-                    {/if}
-                </button>
+        {#if !conversation.contactPublicKey}
+            <div
+                class="shrink-0 border-t border-base-300 bg-base-200 px-4 py-3"
+            >
+                <p class="text-sm text-base-content/60 font-medium">
+                    Contact is unavailable. messaging is paused until they sign
+                    back in
+                </p>
             </div>
-        </div>
+        {:else if conversation.friendRequestStatus === "needs_reverification"}
+            <div
+                class="shrink-0 border-t border-warning/30 bg-warning/10 px-4 py-3"
+            >
+                <p class="text-sm text-warning-content font-medium">
+                    Contact's key changed. re-verify to resume messaging
+                </p>
+                <a
+                    href="/home/friends/requests"
+                    class="text-xs text-warning underline mt-0.5 inline-block"
+                >
+                    Go to requests
+                </a>
+            </div>
+        {:else}
+            <div
+                class="shrink-0 border-t border-base-300 px-4 py-3 bg-base-100"
+            >
+                <div class="flex items-center gap-2">
+                    <input
+                        type="text"
+                        bind:value={inputValue}
+                        onkeydown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                sendMessage();
+                            }
+                        }}
+                        class="input input-bordered w-full"
+                        placeholder="Type a message…"
+                        disabled={sending}
+                    />
+                    <button
+                        class="btn btn-primary shrink-0"
+                        onclick={sendMessage}
+                        disabled={!inputValue.trim() || sending}
+                    >
+                        {#if sending}
+                            <span class="loading loading-spinner loading-sm"
+                            ></span>
+                        {:else}
+                            Send
+                        {/if}
+                    </button>
+                </div>
+            </div>
+        {/if}
     </div>
 {/if}

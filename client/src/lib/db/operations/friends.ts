@@ -1,5 +1,6 @@
 import { sqlite as db } from "$lib/db/sqlite";
 import { friendRequests, users } from "$lib/db/schema";
+import { eq } from "drizzle-orm";
 import { notifyChange } from "$lib/db/dbEvents";
 import { upsertUserById } from "./users";
 import { upsertConversationByContactId } from "./conversations";
@@ -8,6 +9,14 @@ import { appMachineRef } from "$lib/machines";
 
 type ServerFriendRequest =
   FriendRequestModel["friendRequestListResponse"][number];
+
+export async function getAcceptedContactIds(): Promise<string[]> {
+  const rows = await db
+    .select({ senderId: friendRequests.senderId, receiverId: friendRequests.receiverId })
+    .from(friendRequests)
+    .where(eq(friendRequests.status, "accepted"));
+  return rows.flatMap(({ senderId, receiverId }) => [senderId, receiverId]);
+}
 
 export async function upsertFriendRequest(data: ServerFriendRequest) {
   await Promise.all([

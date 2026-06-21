@@ -246,6 +246,42 @@ pub fn delete_keys() -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn reinit_keys() -> Result<(), String> {
+    let store = store();
+    let signing_key = SigningKey::generate(&mut OsRng);
+    let verifying_key = signing_key.verifying_key();
+    store
+        .set_password(
+            PRIVATE_KEY,
+            &general_purpose::STANDARD.encode(signing_key.to_bytes()),
+        )
+        .map_err(|e| e.to_string())?;
+    store
+        .set_password(
+            PUBLIC_KEY,
+            &general_purpose::STANDARD.encode(verifying_key.to_bytes()),
+        )
+        .map_err(|e| e.to_string())?;
+    let secret_key = ChaCha20Poly1305::generate_key(&mut OsRng);
+    store
+        .set_password(
+            SECRET_KEY,
+            &general_purpose::STANDARD.encode(&secret_key[..]),
+        )
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn delete_contact_keys(user_ids: Vec<String>) -> Result<(), String> {
+    let store = store();
+    for user_id in user_ids {
+        let _ = store.delete(&contact_key_id(&user_id));
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub fn decrypt(data: String) -> Result<String, String> {
     let b64 = store()
         .get_password(SECRET_KEY)

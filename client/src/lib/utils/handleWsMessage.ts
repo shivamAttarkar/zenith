@@ -30,6 +30,16 @@ export async function handleWsMessage(msg: WsServerMessage) {
       break;
     }
 
+    case "public-key-deleted": {
+      const { userId } = msg as { userId: string };
+      await db
+        .update(users)
+        .set({ publicKey: null, cachedAt: Date.now() })
+        .where(eq(users.id, userId));
+      notifyChange("users", "update", { id: userId });
+      break;
+    }
+
     case "friend-request": {
       const { friendRequestId } = msg as { friendRequestId: string };
       const { data, error } = await apiClient.api.v1["friend-request"]({
@@ -78,6 +88,23 @@ export async function handleWsMessage(msg: WsServerMessage) {
         .delete(friendRequests)
         .where(eq(friendRequests.id, friendRequestId));
       notifyChange("friend_requests", "delete", { id: friendRequestId });
+      break;
+    }
+
+    case "friend-request-needs-reverification": {
+      const { friendRequestId } = msg as { friendRequestId: string };
+      const { data, error } = await apiClient.api.v1["friend-request"]({
+        id: friendRequestId,
+      }).get();
+      if (!error && data) {
+        const currentUserId = appMachineRef.getSnapshot().context.user?.id;
+        if (currentUserId) {
+          const contactId =
+            data.senderId === currentUserId ? data.receiverId : data.senderId;
+          await crypto.deleteContactKeys([contactId]);
+        }
+        await upsertFriendRequest(data);
+      }
       break;
     }
   }

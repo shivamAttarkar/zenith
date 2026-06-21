@@ -56,9 +56,17 @@ export const WsServerMessage = t.Union([
     friendRequestId: t.String(),
   }),
   t.Object({
+    type: t.Literal("friend-request-needs-reverification"),
+    friendRequestId: t.String(),
+  }),
+  t.Object({
     type: t.Literal("public-key-updated"),
     userId: t.String(),
     publicKey: t.String(),
+  }),
+  t.Object({
+    type: t.Literal("public-key-deleted"),
+    userId: t.String(),
   }),
   t.Object({
     type: t.Literal("error"),

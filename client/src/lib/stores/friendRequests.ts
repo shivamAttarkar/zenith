@@ -12,7 +12,7 @@ export type FriendRequestWithUsers = {
   id: string;
   senderId: string;
   receiverId: string;
-  status: "pending" | "accepted" | "rejected";
+  status: "pending" | "accepted" | "rejected" | "needs_reverification";
   verifiedBySender: boolean;
   verifiedByReceiver: boolean;
   expiresAt: number;

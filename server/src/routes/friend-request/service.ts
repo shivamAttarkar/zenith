@@ -92,14 +92,19 @@ export const FriendRequestService = {
               eq(friendRequest.receiverId, senderId),
             ),
           ),
-          inArray(friendRequest.status, ["pending", "accepted"]),
+          inArray(friendRequest.status, [
+        "pending",
+        "accepted",
+        "needs_reverification",
+      ]),
         ),
       );
 
     if (existing?.[0]) {
       return status(409, {
         message:
-          existing[0].status === "accepted"
+          existing[0].status === "accepted" ||
+          existing[0].status === "needs_reverification"
             ? "You are already friends with this user."
             : "A friend request already exists between you and this user.",
       });
@@ -144,7 +149,7 @@ export const FriendRequestService = {
         message: "Not authorized to access this friend request.",
       });
     }
-    if (req.status !== "pending") {
+    if (req.status !== "pending" && req.status !== "needs_reverification") {
       return status(400, { message: "Friend request is no longer pending." });
     }
 
@@ -178,7 +183,7 @@ export const FriendRequestService = {
     if (!req) {
       return status(404, { message: "Friend request not found." });
     }
-    if (req.status !== "pending") {
+    if (req.status !== "pending" && req.status !== "needs_reverification") {
       return status(400, { message: "Friend request is no longer pending." });
     }
 
@@ -270,10 +275,24 @@ export const FriendRequestService = {
         }),
       ]);
     } else if (isSender && updated.verifiedBySender) {
-      await sendWSMessageToUser({
-        userId: req.receiverId,
-        msg: { type: "friend-request", senderId: userId, friendRequestId: id },
-      });
+      if (req.status === "needs_reverification") {
+        await sendWSMessageToUser({
+          userId: req.receiverId,
+          msg: {
+            type: "friend-request-needs-reverification",
+            friendRequestId: id,
+          },
+        });
+      } else {
+        await sendWSMessageToUser({
+          userId: req.receiverId,
+          msg: {
+            type: "friend-request",
+            senderId: userId,
+            friendRequestId: id,
+          },
+        });
+      }
     }
 
     return updated;

@@ -43,4 +43,12 @@ export const crypto = {
   deleteKeys(): Promise<void> {
     return invoke("delete_keys");
   },
+
+  reinitKeys(): Promise<void> {
+    return invoke("reinit_keys");
+  },
+
+  deleteContactKeys(userIds: string[]): Promise<void> {
+    return invoke("delete_contact_keys", { userIds });
+  },
 };
