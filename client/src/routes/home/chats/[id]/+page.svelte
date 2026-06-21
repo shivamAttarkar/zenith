@@ -51,6 +51,7 @@
             await upsertMessage({
                 id,
                 ts,
+                type: "chat",
                 senderId: user.id,
                 receiverId: cId,
                 payload: { format: "string", msg: text },
