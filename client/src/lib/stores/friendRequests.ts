@@ -1,5 +1,5 @@
-import { derived } from "svelte/store";
-import { desc, eq } from "drizzle-orm";
+import { readable } from "svelte/store";
+import { desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { dbEvents } from "$lib/db/dbEvents";
 import { sqlite as db } from "$lib/db/sqlite";
@@ -24,33 +24,34 @@ export type FriendRequestWithUsers = {
   receiverImage: string | null;
 };
 
-export const friendRequestsStore = derived(
-  dbEvents,
-  ($event, set) => {
-    if ($event && $event.table !== "friend_requests") {
-      return;
-    }
+function queryFriendRequests(set: (value: FriendRequestWithUsers[]) => void) {
+  db.select({
+    id: friendRequests.id,
+    senderId: friendRequests.senderId,
+    receiverId: friendRequests.receiverId,
+    status: friendRequests.status,
+    verifiedBySender: friendRequests.verifiedBySender,
+    verifiedByReceiver: friendRequests.verifiedByReceiver,
+    expiresAt: friendRequests.expiresAt,
+    createdAt: friendRequests.createdAt,
+    syncedAt: friendRequests.syncedAt,
+    senderName: sql<string | null>`"sender"."name"`.as("senderName"),
+    senderImage: sql<string | null>`"sender"."image"`.as("senderImage"),
+    receiverName: sql<string | null>`"receiver"."name"`.as("receiverName"),
+    receiverImage: sql<string | null>`"receiver"."image"`.as("receiverImage"),
+  })
+    .from(friendRequests)
+    .leftJoin(sender, eq(friendRequests.senderId, sender.id))
+    .leftJoin(receiver, eq(friendRequests.receiverId, receiver.id))
+    .orderBy(desc(friendRequests.createdAt))
+    .then(set);
+}
 
-    db.select({
-      id: friendRequests.id,
-      senderId: friendRequests.senderId,
-      receiverId: friendRequests.receiverId,
-      status: friendRequests.status,
-      verifiedBySender: friendRequests.verifiedBySender,
-      verifiedByReceiver: friendRequests.verifiedByReceiver,
-      expiresAt: friendRequests.expiresAt,
-      createdAt: friendRequests.createdAt,
-      syncedAt: friendRequests.syncedAt,
-      senderName: sender.name,
-      senderImage: sender.image,
-      receiverName: receiver.name,
-      receiverImage: receiver.image,
-    })
-      .from(friendRequests)
-      .leftJoin(sender, eq(friendRequests.senderId, sender.id))
-      .leftJoin(receiver, eq(friendRequests.receiverId, receiver.id))
-      .orderBy(desc(friendRequests.createdAt))
-      .then(set);
-  },
-  [] as FriendRequestWithUsers[],
-);
+export const friendRequestsStore = readable<FriendRequestWithUsers[]>([], (set) => {
+  queryFriendRequests(set);
+  return dbEvents.subscribe(($event) => {
+    if ($event?.table === "friend_requests") {
+      queryFriendRequests(set);
+    }
+  });
+});

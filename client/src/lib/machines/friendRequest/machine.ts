@@ -5,85 +5,16 @@ import { apiClient } from "$lib/utils/api";
 import { appMachineRef } from "$lib/machines";
 import { crypto } from "$lib/utils/crypto";
 import { getContactPublicKey } from "$lib/utils/getContactPublicKey";
-import { sqlite as db } from "$lib/db/sqlite";
-import { friendRequests, users } from "$lib/db/schema";
-import { notifyChange } from "$lib/db/dbEvents";
-import type { FriendRequestModel } from "$server/routes/friend-request/model";
-
-type ServerFriendRequest =
-  FriendRequestModel["friendRequestListResponse"][number];
-
-async function upsertUser(userId: string): Promise<void> {
-  const { data, error } = await apiClient.api.v1.user({ id: userId }).get();
-  if (error) {
-    return;
-  }
-  await db
-    .insert(users)
-    .values({
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      image: data.image ?? null,
-      publicKey: data.publicKey ?? null,
-      cachedAt: Date.now(),
-    })
-    .onConflictDoUpdate({
-      target: users.id,
-      set: {
-        name: data.name,
-        email: data.email,
-        image: data.image ?? null,
-        publicKey: data.publicKey ?? null,
-        cachedAt: Date.now(),
-      },
-    });
-  notifyChange("users", "upsert", { id: userId });
-}
-
-export async function upsertFriendRequest(data: ServerFriendRequest) {
-  await Promise.all([
-    db
-      .insert(friendRequests)
-      .values({
-        id: data.id,
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-        status: data.status,
-        verifiedBySender: data.verifiedBySender,
-        verifiedByReceiver: data.verifiedByReceiver,
-        expiresAt: new Date(data.expiresAt).getTime(),
-        createdAt: new Date(data.createdAt).getTime(),
-        syncedAt: Date.now(),
-      })
-      .onConflictDoUpdate({
-        target: friendRequests.id,
-        set: {
-          status: data.status,
-          verifiedBySender: data.verifiedBySender,
-          verifiedByReceiver: data.verifiedByReceiver,
-          syncedAt: Date.now(),
-        },
-      }),
-    upsertUser(
-      data.senderId === appMachineRef.getSnapshot().context.user?.id
-        ? data.receiverId
-        : data.senderId,
-    ),
-  ]);
-  notifyChange("friend_requests", "upsert", { id: data.id });
-}
-
-type Context = {
-  friendRequestId: string | null;
-  receiverId: string | null;
-  authOptions: PublicKeyCredentialRequestOptionsJSON | null;
-  error: string | null;
-};
+import { upsertFriendRequest } from "$lib/db/operations/friends";
 
 const friendRequestSetup = setup({
   types: {
-    context: {} as Context,
+    context: {} as {
+      friendRequestId: string | null;
+      receiverId: string | null;
+      authOptions: PublicKeyCredentialRequestOptionsJSON | null;
+      error: string | null;
+    },
     events: {} as
       | { type: "send"; receiverId: string }
       | { type: "verify"; id: string }

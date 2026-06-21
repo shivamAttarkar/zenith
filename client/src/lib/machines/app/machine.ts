@@ -1,6 +1,7 @@
 import { platform } from "@tauri-apps/plugin-os";
 import { store } from "$lib/utils/store";
-import { assign, fromPromise, setup, and } from "xstate";
+import { assign, fromPromise, fromCallback, setup, and } from "xstate";
+import { handleWsMessage } from "$lib/utils/handleWsMessage";
 import { authMachine } from "../auth/machine";
 import { authClient } from "$lib/utils/auth";
 import { passkeyMachine } from "../passkey/machine";
@@ -9,6 +10,7 @@ import { apiClient } from "$lib/utils/api";
 import { crypto } from "$lib/utils/crypto";
 import { migrate } from "$lib/db/migrate";
 import { db } from "$lib/db/sqlite";
+import { upsertUser } from "$lib/db/operations/users";
 
 const appSetup = setup({
   types: {
@@ -20,6 +22,7 @@ const appSetup = setup({
         id: string;
         email: string;
         name: string;
+        image?: string | null;
         session: typeof authClient.$Infer.Session;
       };
     },
@@ -72,9 +75,27 @@ const appSetup = setup({
         throw new Error("Failed to upload public key");
       }
     }),
-    initilizeDB: fromPromise(async () => {
-      await migrate();
-    }),
+    initilizeDB: fromPromise(
+      async ({
+        input,
+      }: {
+        input: {
+          user?: {
+            id: string;
+            name: string;
+            email: string;
+            image?: string | null;
+          };
+        };
+      }) => {
+        await migrate();
+        const publicKey = await crypto.getPublicKey();
+        if (!input.user) {
+          throw new Error("User is not present.");
+        }
+        await upsertUser({ ...input.user, publicKey });
+      },
+    ),
     logout: fromPromise(async () => {
       await apiClient.api.v1["public-key"].delete();
       const tables = await db.select<{ name: string }[]>(
@@ -85,6 +106,27 @@ const appSetup = setup({
       }
       // await crypto.deleteKeys();
       await authClient.signOut();
+    }),
+    webSocket: fromCallback(({ sendBack }) => {
+      let shouldReconnect = true;
+      let reconnectTimer: ReturnType<typeof setTimeout>;
+      let sub: ReturnType<typeof apiClient.ws.chat.subscribe>;
+
+      function connect() {
+        sub = apiClient.ws.chat.subscribe();
+        sub.on("open", () => sendBack({ type: "wsConnected" }));
+        sub.on("close", () => {
+          sendBack({ type: "wsDisconnected" });
+          if (shouldReconnect) reconnectTimer = setTimeout(connect, 3000);
+        });
+        sub.on("message", ({ data }) => handleWsMessage(data));
+      }
+      connect();
+      return () => {
+        shouldReconnect = false;
+        clearTimeout(reconnectTimer);
+        sub.close();
+      };
     }),
     authMachine,
     passkeyMachine,
@@ -154,6 +196,7 @@ const appMachine = appSetup.createMachine({
                         id: event.output.user.id,
                         name: event.output.user.name,
                         email: event.output.user.email,
+                        image: event.output.user.image,
                         session: event.output,
                       };
                     },
@@ -216,11 +259,13 @@ const appMachine = appSetup.createMachine({
     initializingDB: {
       invoke: {
         src: "initilizeDB",
+        input: ({ context }) => ({ user: context.user }),
         onDone: { target: "ready" },
         onError: { target: "error" },
       },
     },
     ready: {
+      invoke: [{ src: "webSocket" }],
       on: {
         LOGOUT: "logout",
       },

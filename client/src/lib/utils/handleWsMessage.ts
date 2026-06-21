@@ -3,9 +3,13 @@ import { sqlite as db } from "$lib/db/sqlite";
 import { users, friendRequests } from "$lib/db/schema";
 import { notifyChange } from "$lib/db/dbEvents";
 import { apiClient } from "$lib/utils/api";
-import { upsertFriendRequest } from "$lib/machines/friendRequest/machine";
+import type { WsServerMessage } from "$server/ws/types";
+import { upsertFriendRequest } from "$lib/db/operations/friends";
+import { appMachineRef } from "$lib/machines";
+import { crypto } from "$lib/utils/crypto";
+import { getContactPublicKey } from "$lib/utils/getContactPublicKey";
 
-export async function handleWsMessage(msg: Record<string, unknown>) {
+export async function handleWsMessage(msg: WsServerMessage) {
   switch (msg.type) {
     case "public-key-updated": {
       const { userId, publicKey } = msg as {
@@ -38,6 +42,15 @@ export async function handleWsMessage(msg: Record<string, unknown>) {
       }).get();
       if (!error && data) {
         await upsertFriendRequest(data);
+        if (data.verifiedBySender && data.verifiedByReceiver) {
+          const currentUserId = appMachineRef.getSnapshot().context.user?.id;
+          if (currentUserId) {
+            const friendId =
+              data.senderId === currentUserId ? data.receiverId : data.senderId;
+            const publicKey = await getContactPublicKey(friendId);
+            await crypto.deriveSharedSecret(publicKey, friendId);
+          }
+        }
       }
       break;
     }

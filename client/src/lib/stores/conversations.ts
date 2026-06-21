@@ -1,4 +1,4 @@
-import { derived } from "svelte/store";
+import { readable } from "svelte/store";
 import { desc, eq } from "drizzle-orm";
 import { dbEvents } from "$lib/db/dbEvents";
 import { sqlite as db } from "$lib/db/sqlite";
@@ -15,38 +15,35 @@ export type ConversationWithContact = {
   createdAt: number;
 };
 
-export const conversationsStore = derived(
-  dbEvents,
-  ($event, set) => {
-    if (
-      $event &&
-      $event.table !== "conversations" &&
-      $event.table !== "messages"
-    ) {
-      return;
-    }
+function queryConversations(set: (value: ConversationWithContact[]) => void) {
+  db.select({
+    id: conversations.id,
+    contactId: conversations.contactId,
+    contactName: users.name,
+    contactImage: users.image,
+    lastMessageId: conversations.lastMessageId,
+    lastMessageAt: conversations.lastMessageAt,
+    unreadCount: conversations.unreadCount,
+    createdAt: conversations.createdAt,
+  })
+    .from(conversations)
+    .leftJoin(users, eq(conversations.contactId, users.id))
+    .orderBy(desc(conversations.lastMessageAt))
+    .then((rows) =>
+      set(
+        rows.map((r) => ({
+          ...r,
+          contactName: r.contactName ?? r.contactId,
+        })),
+      ),
+    );
+}
 
-    db.select({
-      id: conversations.id,
-      contactId: conversations.contactId,
-      contactName: users.name,
-      contactImage: users.image,
-      lastMessageId: conversations.lastMessageId,
-      lastMessageAt: conversations.lastMessageAt,
-      unreadCount: conversations.unreadCount,
-      createdAt: conversations.createdAt,
-    })
-      .from(conversations)
-      .leftJoin(users, eq(conversations.contactId, users.id))
-      .orderBy(desc(conversations.lastMessageAt))
-      .then((rows) =>
-        set(
-          rows.map((r) => ({
-            ...r,
-            contactName: r.contactName ?? r.contactId,
-          })),
-        ),
-      );
-  },
-  [] as ConversationWithContact[],
-);
+export const conversationsStore = readable<ConversationWithContact[]>([], (set) => {
+  queryConversations(set);
+  return dbEvents.subscribe(($event) => {
+    if ($event?.table === "conversations" || $event?.table === "messages") {
+      queryConversations(set);
+    }
+  });
+});
