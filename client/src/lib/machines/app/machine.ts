@@ -11,7 +11,10 @@ import { apiClient } from "$lib/utils/api";
 import { crypto } from "$lib/utils/crypto";
 import { migrate } from "$lib/db/migrate";
 import { upsertUser } from "$lib/db/operations/users";
-import { upsertFriendRequest, getAcceptedContactIds } from "$lib/db/operations/friends";
+import {
+  upsertFriendRequest,
+  getAcceptedContactIds,
+} from "$lib/db/operations/friends";
 import { dropAllTables } from "$lib/db/operations/schema";
 
 const appSetup = setup({
@@ -130,7 +133,10 @@ const appSetup = setup({
           wsChatSend.set(null);
           if (shouldReconnect) reconnectTimer = setTimeout(connect, 3000);
         });
-        sub.on("message", ({ data }) => handleWsMessage(data));
+        sub.on("message", ({ data }) => {
+          console.log(data);
+          handleWsMessage(data);
+        });
       }
       connect();
       return () => {

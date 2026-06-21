@@ -4,6 +4,7 @@ import { conversations, messages } from "$lib/db/schema";
 import { notifyChange } from "$lib/db/dbEvents";
 import { appMachineRef } from "$lib/machines";
 import { upsertConversationByContactId } from "./conversations";
+import { crypto } from "$lib/utils/crypto";
 import type { WsServerMessage } from "$server/ws/types";
 
 type ChatMessage = Extract<WsServerMessage, { type: "chat" }>;
@@ -21,6 +22,15 @@ export async function upsertMessage(msg: ChatMessage) {
 
   await upsertConversationByContactId(contactId);
 
+  let payload = msg.payload.msg;
+  if (isIncoming) {
+    try {
+      payload = await crypto.decryptFrom(msg.senderId, msg.payload.msg);
+    } catch (e) {
+      console.error("Failed to decrypt message from", msg.senderId, e);
+    }
+  }
+
   await db
     .insert(messages)
     .values({
@@ -28,7 +38,7 @@ export async function upsertMessage(msg: ChatMessage) {
       conversationId,
       senderId: msg.senderId,
       receiverId: msg.receiverId,
-      payload: msg.payload.msg,
+      payload,
       format: msg.payload.format,
       timestamp: msg.ts,
       status: isIncoming ? "delivered" : "sent",

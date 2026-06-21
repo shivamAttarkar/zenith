@@ -7,6 +7,7 @@
     import { appMachineRef } from "$lib/machines";
     import { upsertMessage } from "$lib/db/operations/messages";
     import { markConversationRead } from "$lib/db/operations/conversations";
+    import { crypto as tauriCrypto } from "$lib/utils/crypto";
 
     const currentUser = useSelector(appMachineRef, (snap) => snap.context.user);
     const conversation = $derived(
@@ -48,6 +49,7 @@
         const ts = Date.now();
 
         try {
+            const encryptedMsg = await tauriCrypto.encryptFor(cId, text);
             await upsertMessage({
                 id,
                 ts,
@@ -62,7 +64,7 @@
                 ts,
                 senderId: user.id,
                 receiverId: cId,
-                payload: { format: "string", msg: text },
+                payload: { format: "string", msg: encryptedMsg },
             });
         } catch (err) {
             console.error("Failed to send message:", err);
