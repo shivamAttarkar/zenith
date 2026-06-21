@@ -2,6 +2,7 @@ import { platform } from "@tauri-apps/plugin-os";
 import { store } from "$lib/utils/store";
 import { assign, fromPromise, fromCallback, setup, and } from "xstate";
 import { handleWsMessage } from "$lib/utils/handleWsMessage";
+import { wsChatSend } from "$lib/stores/wsSend";
 import { authMachine } from "../auth/machine";
 import { authClient } from "$lib/utils/auth";
 import { passkeyMachine } from "../passkey/machine";
@@ -114,9 +115,13 @@ const appSetup = setup({
 
       function connect() {
         sub = apiClient.ws.chat.subscribe();
-        sub.on("open", () => sendBack({ type: "wsConnected" }));
+        sub.on("open", () => {
+          sendBack({ type: "wsConnected" });
+          wsChatSend.set((data) => sub.send(data));
+        });
         sub.on("close", () => {
           sendBack({ type: "wsDisconnected" });
+          wsChatSend.set(null);
           if (shouldReconnect) reconnectTimer = setTimeout(connect, 3000);
         });
         sub.on("message", ({ data }) => handleWsMessage(data));
@@ -125,6 +130,7 @@ const appSetup = setup({
       return () => {
         shouldReconnect = false;
         clearTimeout(reconnectTimer);
+        wsChatSend.set(null);
         sub.close();
       };
     }),

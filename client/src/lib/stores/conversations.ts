@@ -2,7 +2,7 @@ import { readable } from "svelte/store";
 import { desc, eq } from "drizzle-orm";
 import { dbEvents } from "$lib/db/dbEvents";
 import { sqlite as db } from "$lib/db/sqlite";
-import { conversations, users } from "$lib/db/schema";
+import { conversations, users, messages } from "$lib/db/schema";
 
 export type ConversationWithContact = {
   id: string;
@@ -11,6 +11,8 @@ export type ConversationWithContact = {
   contactImage: string | null;
   lastMessageId: string | null;
   lastMessageAt: number | null;
+  lastMessagePayload: string | null;
+  lastMessageSenderId: string | null;
   unreadCount: number;
   createdAt: number;
 };
@@ -23,11 +25,14 @@ function queryConversations(set: (value: ConversationWithContact[]) => void) {
     contactImage: users.image,
     lastMessageId: conversations.lastMessageId,
     lastMessageAt: conversations.lastMessageAt,
+    lastMessagePayload: messages.payload,
+    lastMessageSenderId: messages.senderId,
     unreadCount: conversations.unreadCount,
     createdAt: conversations.createdAt,
   })
     .from(conversations)
     .leftJoin(users, eq(conversations.contactId, users.id))
+    .leftJoin(messages, eq(conversations.lastMessageId, messages.id))
     .orderBy(desc(conversations.lastMessageAt))
     .then((rows) =>
       set(

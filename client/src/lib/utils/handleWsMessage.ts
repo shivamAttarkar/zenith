@@ -5,12 +5,18 @@ import { notifyChange } from "$lib/db/dbEvents";
 import { apiClient } from "$lib/utils/api";
 import type { WsServerMessage } from "$server/ws/types";
 import { upsertFriendRequest } from "$lib/db/operations/friends";
+import { upsertMessage } from "$lib/db/operations/messages";
 import { appMachineRef } from "$lib/machines";
 import { crypto } from "$lib/utils/crypto";
 import { getContactPublicKey } from "$lib/utils/getContactPublicKey";
 
 export async function handleWsMessage(msg: WsServerMessage) {
   switch (msg.type) {
+    case "chat": {
+      await upsertMessage(msg);
+      break;
+    }
+
     case "public-key-updated": {
       const { userId, publicKey } = msg as {
         userId: string;

@@ -28,6 +28,15 @@
         },
         { loading: false } as { error?: string; loading: boolean },
     );
+    const authState = derived(
+        authMachineStore,
+        ($authRef, set) => {
+            if (!$authRef) return;
+            const sub = $authRef.subscribe((snap) => set(snap.value));
+            return () => sub.unsubscribe();
+        },
+        "unauthorized",
+    );
 
     const form = createForm(() => ({
         defaultValues: {
@@ -55,7 +64,7 @@
             <p class="text-center text-sm">
                 Already have an account? <button
                     onclick={() => goto(resolve("/auth/login"))}
-                    class="link link-hover">Login</button
+                    class="link link-hover underline">Login</button
                 >
             </p>
         </div>
@@ -130,13 +139,22 @@
                     />
                 {/snippet}
             </form.Field>
-            <Button width="fill" class="mt-4" type="submit" loading={$authContext.loading}
-                >Sign up</Button
+            <Button
+                width="fill"
+                class="mt-4"
+                type="submit"
+                loading={$authState === "signingUp"}>Sign up</Button
             >
         </form>
         <div class="divider">Or continue with</div>
         <div class="flex">
-            <Button icon={KeyIcon} variant="ghost" width="fill" style="outline"
+            <Button
+                icon={KeyIcon}
+                variant="ghost"
+                width="fill"
+                style="outline"
+                loading={$authState === "passkeyAuth"}
+                onclick={() => get(authMachineStore)?.send({ type: "passkey" })}
                 >Continue with Passkey</Button
             >
         </div>

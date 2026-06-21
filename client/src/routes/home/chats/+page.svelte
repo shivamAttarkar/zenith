@@ -1,9 +1,10 @@
-<script>
-    import { conversationsStore } from "$lib/stores/conversations";
+<script lang="ts">
+    import MessagesIcon from "$lib/icons/messages.svg?component";
 </script>
 
-<div class="p-4">Chats</div>
-
-{#each $conversationsStore as conversation}
-    <div>{conversation.id}</div>
-{/each}
+<div
+    class="flex flex-col items-center justify-center h-full gap-3 text-base-content/40"
+>
+    <MessagesIcon class="size-16" />
+    <p class="text-sm">No Conversation Selected</p>
+</div>

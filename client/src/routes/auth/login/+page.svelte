@@ -26,6 +26,15 @@
         },
         { loading: false } as { error?: string; loading: boolean },
     );
+    const authState = derived(
+        authMachineStore,
+        ($authRef, set) => {
+            if (!$authRef) return;
+            const sub = $authRef.subscribe((snap) => set(snap.value));
+            return () => sub.unsubscribe();
+        },
+        "unauthorized",
+    );
     const form = createForm(() => ({
         defaultValues: {
             email: "",
@@ -49,7 +58,7 @@
             <h2 class="text-center text-2xl font-bold">Welcome to Zenith</h2>
             <p class="text-center text-sm">
                 Don't have an account? <button
-                    class="link link-hover"
+                    class="link link-hover underline"
                     onclick={() => goto(resolve("/auth/signup"))}>Signup</button
                 >
             </p>
@@ -110,7 +119,7 @@
                 >forgot password?</button
             >
             <Button
-                loading={$authContext.loading}
+                loading={$authState === "loggingIn"}
                 width="fill"
                 class="mt-4"
                 type="submit">login</Button
@@ -118,7 +127,13 @@
         </form>
         <div class="divider">Or continue with</div>
         <div class="flex">
-            <Button icon={KeyIcon} variant="ghost" width="fill" style="outline"
+            <Button
+                icon={KeyIcon}
+                variant="ghost"
+                width="fill"
+                style="outline"
+                loading={$authState === "passkeyAuth"}
+                onclick={() => get(authMachineStore)?.send({ type: "passkey" })}
                 >Continue with Passkey</Button
             >
         </div>
