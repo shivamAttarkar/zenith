@@ -5,6 +5,7 @@
     import { apiClient } from "$lib/utils/api";
     import { appMachineRef, friendRequestActor } from "$lib/machines";
     import { friendRequestsStore } from "$lib/stores/friendRequests";
+    import ErrorIcon from "$lib/icons/error.svg?component";
 
     type SearchUser = Treaty.Data<
         ReturnType<typeof apiClient.api.v1.user.search.get>
@@ -78,11 +79,12 @@
 
     {#if machineError}
         <div role="alert" class="alert alert-error alert-soft">
+            <ErrorIcon class="size-8"></ErrorIcon>
             <span class="text-sm"
                 >{machineError ?? "Server Error has occured."}</span
             >
             <button
-                class="btn btn-sm btn-ghost ml-auto"
+                class="btn btn-sm btn-outline btn-error ml-auto"
                 onclick={() => friendRequestActor.send({ type: "retry" })}
             >
                 Dismiss

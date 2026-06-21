@@ -3,6 +3,8 @@
     import { friendRequestsStore } from "$lib/stores/friendRequests";
     import { appMachineRef, friendRequestActor } from "$lib/machines";
     import FriendsIcon from "$lib/icons/friends.svg?component";
+    import ErrorIcon from "$lib/icons/error.svg?component";
+    import InfoIcon from "$lib/icons/info.svg?component";
 
     const currentUser = useSelector(appMachineRef, (snap) => snap.context.user);
     const machineState = useSelector(friendRequestActor, (snap) => snap);
@@ -21,10 +23,7 @@
     function needsVerification(
         req: (typeof $friendRequestsStore)[number],
     ): boolean {
-        if (
-            req.status !== "pending" &&
-            req.status !== "needs_reverification"
-        ) {
+        if (req.status !== "pending" && req.status !== "needs_reverification") {
             return false;
         }
         const isSent = req.senderId === $currentUser?.id;
@@ -42,11 +41,12 @@
 <div class="flex flex-col gap-4 p-4 h-full overflow-y-auto">
     {#if machineError}
         <div role="alert" class="alert alert-error alert-soft">
+            <ErrorIcon class="size-8"></ErrorIcon>
             <span class="text-sm"
                 >{machineError ?? "Server Error has occured."}</span
             >
             <button
-                class="btn btn-sm btn-ghost ml-auto"
+                class="btn btn-sm btn-outline btn-error ml-auto"
                 onclick={() => friendRequestActor.send({ type: "retry" })}
             >
                 Dismiss
@@ -94,18 +94,14 @@
                             {name ?? "Unknown"}
                         </span>
                         <span class="text-xs text-base-content/50">
-                            {#if req.status === "needs_reverification"}
-                                Key changed · re-verify required
-                            {:else}
-                                {isSent ? "Sent" : "Received"}
-                                {formatDate(req.createdAt)}
-                            {/if}
+                            {isSent ? "Sent on" : "Received on"}
+                            {formatDate(req.createdAt)}
                         </span>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         {#if canVerify}
                             <button
-                                class="btn btn-primary btn-xs"
+                                class="btn btn-primary btn-sm btn-soft min-w-26"
                                 disabled={busy ||
                                     (isProcessing && processingId !== req.id)}
                                 onclick={() =>
@@ -118,14 +114,27 @@
                                     <span
                                         class="loading loading-spinner loading-xs"
                                     ></span>
+                                {:else if req.status === "needs_reverification"}
+                                    Verify Again
                                 {:else}
                                     Verify
                                 {/if}
                             </button>
+                            {#if req.status === "needs_reverification"}
+                                <div class="tooltip tooltip-left">
+                                    <div class="tooltip-content">
+                                        Keys changed since last verification
+                                    </div>
+                                    <InfoIcon
+                                        class="size-6 btn btn-circle text-balance/70"
+                                    ></InfoIcon>
+                                </div>
+                            {/if}
+                        {:else}
+                            <span class="badge badge-sm {config.class}">
+                                {config.label}
+                            </span>
                         {/if}
-                        <span class="badge badge-sm {config.class}">
-                            {config.label}
-                        </span>
                     </div>
                 </li>
             {/each}

@@ -13,7 +13,7 @@
     const user = useSelector(appMachineRef, (snap) => snap.context.user);
 </script>
 
-<div class="drawer lg:drawer-open h-full">
+<div class="drawer drawer-open h-full">
     <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col h-full overflow-hidden">
         {@render children()}
