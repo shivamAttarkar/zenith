@@ -8,9 +8,7 @@ import { routes } from "./routes";
 import { webSocketPlugin } from "./ws";
 import "./env";
 
-const app = new Elysia();
-
-app
+const app = new Elysia()
   .use(cors())
   .use(authPlugin)
   .use(webSocketPlugin)
@@ -57,3 +55,5 @@ if (Bun.env.NODE_ENV === "development") {
 if (Bun.env.NODE_ENV && Bun.env.NODE_ENV === "production") {
   console.log(`Worker ${process.pid} is online.`);
 }
+
+export type App = typeof app;

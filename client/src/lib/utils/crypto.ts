@@ -1,0 +1,54 @@
+import { invoke } from "@tauri-apps/api/core";
+
+export const crypto = {
+  getPublicKey(): Promise<string> {
+    return invoke("get_public_key");
+  },
+
+  setSecretKey(key: number[]): Promise<void> {
+    return invoke("set_secret_key", { key });
+  },
+
+  deriveSharedSecret(peerPubKeyB64: string, userId: string): Promise<void> {
+    return invoke("derive_shared_secret", {
+      peerPubKeyB64,
+      userId,
+    });
+  },
+
+  encryptFor(userId: string, data: string): Promise<string> {
+    return invoke("encrypt_for", { userId, data });
+  },
+
+  decryptFrom(userId: string, data: string): Promise<string> {
+    return invoke("decrypt_from", { userId, data });
+  },
+
+  sign(data: string): Promise<string> {
+    return invoke("sign", { data });
+  },
+
+  verify(data: string, signature: string): Promise<boolean> {
+    return invoke("verify", { data, signature });
+  },
+
+  encrypt(data: string): Promise<string> {
+    return invoke("encrypt", { data });
+  },
+
+  decrypt(data: string): Promise<string> {
+    return invoke("decrypt", { data });
+  },
+
+  deleteKeys(): Promise<void> {
+    return invoke("delete_keys");
+  },
+
+  reinitKeys(): Promise<void> {
+    return invoke("reinit_keys");
+  },
+
+  deleteContactKeys(userIds: string[]): Promise<void> {
+    return invoke("delete_contact_keys", { userIds });
+  },
+};
